@@ -26,6 +26,32 @@
     "styleWeights": {}
   },
   {
+    "name": "Tạ Đức Thiện",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 75,
+        "kote": 75,
+        "dou": 65,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 80,
+        "kote": 70,
+        "dou": 60,
+        "tsuki": 50
+      },
+      "attack_rate": 65,
+      "defend_rate": 60,
+      "hansoku_rate": 5,
+      "stamina": 75
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
     "name": "Nguyễn Xuân Khoa",
     "styles": [
       "Chudan"
