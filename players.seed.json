@@ -198,14 +198,14 @@
     "baseStats": {
       "technique": {
         "men": 72,
-        "kote": 55,
+        "kote": 60,
         "dou": 70,
         "tsuki": 5
       },
       "defense": {
-        "men": 60,
-        "kote": 60,
-        "dou": 65,
+        "men": 65,
+        "kote": 65,
+        "dou": 60,
         "tsuki": 50
       },
       "attack_rate": 60,
