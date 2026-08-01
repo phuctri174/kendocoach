@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@theme {
+  /* Greens sampled from public/logo/logo.png: the crest field is #00612E,
+     which is hsl(148, 100%, 19%). The ramp holds that hue and saturation and
+     only moves lightness, so every shade is the brand green. */
+  --color-forest-900: #002913;
+  --color-forest-800: #003d1d;
+  --color-forest-700: #00612e;
+  --color-forest-600: #00803c;
+  --color-forest-500: #00a34c;
+  --color-forest-400: #1bbb66;
+
+  /* Gold / brass — interactive elements, active states, result banners.
+     Note: the crest itself is white-on-green and contains no gold, so this
+     accent is a UI decision rather than a sampled brand colour. */
+  --color-brass-600: #8c6d1f;
+  --color-brass-500: #b8922b;
+  --color-brass-400: #c9a227;
+  --color-brass-300: #e3c55a;
+  --color-brass-200: #f0dc9a;
+
+  --color-bone: #f5f3ec;
+  --color-bone-dim: #cbd8ce;
+  --color-bone-faint: #8fa896;
+
+  --color-blood: #a8322a;
+
+  /* Deep blue, used only for Nito. The -300 step is the readable-on-dark one. */
+  --color-steel-500: #2f5fb0;
+  --color-steel-300: #7fa9f2;
+
+  --font-display: var(--font-oswald), "Arial Narrow", sans-serif;
+  --font-body: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-forest-900);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, var(--color-forest-600) 0%, transparent 60%),
+    linear-gradient(180deg, var(--color-forest-800) 0%, var(--color-forest-900) 100%);
+  background-attachment: fixed;
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+/* type=search draws its own clear button; our fields supply a styled one. */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Bold condensed caps for every heading. */
+.display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/*
+ * Hexagon geometry, pulled from the crest. Clipped shapes cannot take a
+ * border, so each "framed" shape is an outer clipped element in the accent
+ * colour with an inset clipped child — the sliver that shows through reads as
+ * the border.
+ */
+.hex-tall {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.hex-wide {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+/* Elongated hexagon: flat top and bottom, angled corners. Holds real content. */
+.hex-card {
+  clip-path: polygon(
+    0 var(--hex-cut, 22px),
+    var(--hex-cut, 22px) 0,
+    calc(100% - var(--hex-cut, 22px)) 0,
+    100% var(--hex-cut, 22px),
+    100% calc(100% - var(--hex-cut, 22px)),
+    calc(100% - var(--hex-cut, 22px)) 100%,
+    var(--hex-cut, 22px) 100%,
+    0 calc(100% - var(--hex-cut, 22px))
+  );
+}
+
+.hex-tab {
+  --hex-cut: 12px;
+  clip-path: polygon(
+    var(--hex-cut) 0,
+    calc(100% - var(--hex-cut)) 0,
+    100% 50%,
+    calc(100% - var(--hex-cut)) 100%,
+    var(--hex-cut) 100%,
+    0 50%
+  );
+}
+
+/* Pine-branch watermark for empty states, drawn from the crest motif. */
+.pine-watermark {
+  position: relative;
+  isolation: isolate;
+}
+
+.pine-watermark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23F5F3EC' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M100 24 L100 178'/%3E%3Cpath d='M100 44 L64 68 M100 44 L136 68'/%3E%3Cpath d='M100 66 L58 94 M100 66 L142 94'/%3E%3Cpath d='M100 90 L54 122 M100 90 L146 122'/%3E%3Cpath d='M100 116 L62 146 M100 116 L138 146'/%3E%3Cpath d='M100 142 L72 166 M100 142 L128 166'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: min(52%, 260px);
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

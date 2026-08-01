@@ -1,0 +1,10 @@
+{
+  // players.seed.json is imported as a module by the bundler, which rejects a
+  // UTF-8 BOM outright ("Unable to make a module from invalid JSON") and takes
+  // the whole app down. Saving as plain UTF-8 keeps that from coming back.
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "[json]": {
+    "files.encoding": "utf8"
+  }
+}

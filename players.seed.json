@@ -1,0 +1,1163 @@
+[
+  {
+    "name": "Trần Mai Khánh",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 82,
+        "kote": 82,
+        "dou": 85,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 80,
+        "dou": 80,
+        "tsuki": 50
+      },
+      "attack_rate": 65,
+      "defend_rate": 65,
+      "hansoku_rate": 5,
+      "stamina": 60
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Xuân Khoa",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 85,
+        "kote": 85,
+        "dou": 70,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 80,
+        "kote": 75,
+        "dou": 70,
+        "tsuki": 50
+      },
+      "attack_rate": 70,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 80
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Hoàng Minh Tâm",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 90,
+        "kote": 80,
+        "dou": 75,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 85,
+        "kote": 80,
+        "dou": 75,
+        "tsuki": 50
+      },
+      "attack_rate": 75,
+      "defend_rate": 55,
+      "hansoku_rate": 8,
+      "stamina": 80
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Phan Anh Minh",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 92,
+        "kote": 85,
+        "dou": 80,
+        "tsuki": 15
+      },
+      "defense": {
+        "men": 80,
+        "kote": 75,
+        "dou": 80,
+        "tsuki": 50
+      },
+      "attack_rate": 70,
+      "defend_rate": 55,
+      "hansoku_rate": 5,
+      "stamina": 85
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Kiều Hồng Nhung",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 70,
+        "kote": 75,
+        "dou": 80,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 60,
+        "kote": 75,
+        "dou": 75,
+        "tsuki": 50
+      },
+      "attack_rate": 50,
+      "defend_rate": 65,
+      "hansoku_rate": 5,
+      "stamina": 60
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Liên Toàn",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 85,
+        "kote": 80,
+        "dou": 70,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 85,
+        "kote": 80,
+        "dou": 75,
+        "tsuki": 40
+      },
+      "attack_rate": 70,
+      "defend_rate": 40,
+      "hansoku_rate": 10,
+      "stamina": 70
+    },
+    "styleModifiers": {
+        "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+    },
+    "styleWeights": {
+         "Chudan": 0.4,
+    "Jodan": 0.6
+    }
+  },
+  {
+    "name": "Trần Thụy Bảo Như",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 85,
+        "kote": 70,
+        "dou": 82,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 70,
+        "kote": 75,
+        "dou": 77,
+        "tsuki": 50
+      },
+      "attack_rate": 75,
+      "defend_rate": 45,
+      "hansoku_rate": 5,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Thị Nhị Phương",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 70,
+        "kote": 55,
+        "dou": 70,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 55,
+        "kote": 60,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 40,
+      "hansoku_rate": 5,
+      "stamina": 60
+    },
+    "styleModifiers": {
+    "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+  },
+    "styleWeights": {
+        "Chudan": 0.4,
+    "Jodan": 0.6
+    }
+  },
+  {
+    "name": "Ngô Đắc Sỹ Phong",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 80,
+        "kote": 70,
+        "dou": 75,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 80,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 80,
+      "defend_rate": 30,
+      "hansoku_rate": 10,
+      "stamina": 70
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Lê Minh Hiếu",
+    "styles": [
+      "Chudan", "Nito"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 80,
+        "kote": 80,
+        "dou": 75,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 85,
+        "kote": 80,
+        "dou": 65,
+        "tsuki": 40
+      },
+      "attack_rate": 55,
+      "defend_rate": 60,
+      "hansoku_rate": 20,
+      "stamina": 80
+    },
+    "styleModifiers": {
+        "Nito": {
+      "defense.men": 7,
+      "defense.dou": 7,
+      "technique.kote": -7,
+      "technique.dou": -7,
+      "technique.tsuki": -7
+    }
+    },
+    "styleWeights": {
+        "Chudan": 0.2,
+    "Nito": 0.8
+    }
+  },
+  {
+    "name": "Lê Hoàng Kim",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 58,
+        "kote": 60,
+        "dou": 60,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 55,
+        "kote": 65,
+        "dou": 70,
+        "tsuki": 50
+      },
+      "attack_rate": 55,
+      "defend_rate": 65,
+      "hansoku_rate": 8,
+      "stamina": 50
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Phạm Quang Hòa",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 80,
+        "kote": 75,
+        "dou": 65,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 75,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 70,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Võ Huyền Chân",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 75,
+        "kote": 75,
+        "dou": 55,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 70,
+        "dou": 70,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 50,
+      "hansoku_rate": 8,
+      "stamina": 60
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Phúc Điền",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 85,
+        "kote": 75,
+        "dou": 60,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 75,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Phạm Thành Nhân",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 75,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 70,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 50,
+      "hansoku_rate": 15,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Trần Minh Đức",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 70,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 70,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 55,
+      "defend_rate": 48,
+      "hansoku_rate": 12,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Phạm Tô Minh Quốc",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 82,
+        "kote": 80,
+        "dou": 60,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 85,
+        "kote": 80,
+        "dou": 55,
+        "tsuki": 35
+      },
+      "attack_rate": 56,
+      "defend_rate": 48,
+      "hansoku_rate": 13,
+      "stamina": 63
+    },
+     "styleModifiers": {
+    "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+  },
+    "styleWeights": {
+        "Chudan": 0.2,
+    "Jodan": 0.8
+    }
+  },
+  {
+    "name": "Lê Minh Nhật",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 70,
+        "kote": 70,
+        "dou": 60,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 70,
+        "kote": 70,
+        "dou": 60,
+        "tsuki": 50
+      },
+      "attack_rate": 54,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 70
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Ngô Tấn Phát",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 75,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 65,
+        "dou": 60,
+        "tsuki": 50
+      },
+      "attack_rate": 55,
+      "defend_rate": 48,
+      "hansoku_rate": 11,
+      "stamina": 65
+    },
+    "styleModifiers": {
+    "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+  },
+    "styleWeights": {
+        "Chudan": 0.5,
+    "Jodan": 0.5
+    }
+  },
+  {
+    "name": "Nhi Nhi",
+    "styles": [
+      "Chudan", "Nito"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 65,
+        "kote": 65,
+        "dou": 60,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 60,
+        "dou": 60,
+        "tsuki": 50
+      },
+      "attack_rate": 50,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 55
+    },
+     "styleModifiers": {
+    "Nito": {
+      "defense.men": 7,
+      "defense.dou": 7,
+      "technique.kote": -7,
+      "technique.dou": -7,
+      "technique.tsuki": -7
+    }
+  },
+  "styleWeights": {
+    "Chudan": 0.6,
+    "Nito": 0.4
+  }
+  },
+  {
+    "name": "Hoàng Minh Châu",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 70,
+        "kote": 75,
+        "dou": 60,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 60,
+        "kote": 65,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 65,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Trịnh Thị Hồng",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 60,
+        "kote": 65,
+        "dou": 55,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 50,
+        "kote": 55,
+        "dou": 60,
+        "tsuki": 50
+      },
+      "attack_rate": 20,
+      "defend_rate": 75,
+      "hansoku_rate": 5,
+      "stamina": 60
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Văn Quý",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 60,
+        "kote": 60,
+        "dou": 40,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 60,
+        "dou": 35,
+        "tsuki": 30
+      },
+      "attack_rate": 46,
+      "defend_rate": 46,
+      "hansoku_rate": 14,
+      "stamina": 55
+    },
+    "styleModifiers": {
+        "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+    },
+    "styleWeights": {
+        "Chudan": 0.5,
+    "Jodan": 0.5
+    }
+  },
+  {
+    "name": "Phạm Nguyễn Ngọc Trân",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 55,
+        "kote": 55,
+        "dou": 45,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 50,
+        "kote": 55,
+        "dou": 55,
+        "tsuki": 50
+      },
+      "attack_rate": 40,
+      "defend_rate": 55,
+      "hansoku_rate": 10,
+      "stamina": 50
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Lương Trọng Nhân",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 82,
+        "kote": 80,
+        "dou": 75,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 80,
+        "kote": 75,
+        "dou": 75,
+        "tsuki": 50
+      },
+      "attack_rate": 55,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 75
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Trung Tín",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 70,
+        "kote": 70,
+        "dou": 60,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 70,
+        "kote": 65,
+        "dou": 60,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 50,
+      "hansoku_rate": 15,
+      "stamina": 68
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Đặng Kiều Diễm",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 77,
+        "kote": 72,
+        "dou": 75,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 70,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 50,
+      "defend_rate": 65,
+      "hansoku_rate": 7,
+      "stamina": 63
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Ka Nguyệt",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 77,
+        "kote": 67,
+        "dou": 82,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 75,
+        "kote": 70,
+        "dou": 70,
+        "tsuki": 50
+      },
+      "attack_rate": 70,
+      "defend_rate": 40,
+      "hansoku_rate": 15,
+      "stamina": 70
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Lê Vũ Ngọc Duy",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 72,
+        "kote": 60,
+        "dou": 55,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 72,
+        "kote": 55,
+        "dou": 50,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 45,
+      "hansoku_rate": 20,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Nhi Bảo Nam",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 60,
+        "kote": 45,
+        "dou": 40,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 55,
+        "kote": 55,
+        "dou": 40,
+        "tsuki": 50
+      },
+      "attack_rate": 55,
+      "defend_rate": 45,
+      "hansoku_rate": 15,
+      "stamina": 60
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Cao Bích Trâm",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 65,
+        "kote": 60,
+        "dou": 65,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 55,
+        "kote": 60,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 50,
+      "hansoku_rate": 10,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Trần Phúc Trí",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 60,
+        "kote": 60,
+        "dou": 50,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 65,
+        "dou": 60,
+        "tsuki": 50
+      },
+      "attack_rate": 60,
+      "defend_rate": 35,
+      "hansoku_rate": 15,
+      "stamina": 60
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Phan Quốc Phú",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 88,
+        "kote": 80,
+        "dou": 70,
+        "tsuki": 7
+      },
+      "defense": {
+        "men": 80,
+        "kote": 80,
+        "dou": 75,
+        "tsuki": 50
+      },
+      "attack_rate": 55,
+      "defend_rate": 55,
+      "hansoku_rate": 7,
+      "stamina": 75
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Nguyễn Phúc Diệu An",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 50,
+        "kote": 45,
+        "dou": 40,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 40,
+        "kote": 45,
+        "dou": 50,
+        "tsuki": 50
+      },
+      "attack_rate": 20,
+      "defend_rate": 65,
+      "hansoku_rate": 10,
+      "stamina": 50
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Đinh Nguyên Long",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 55,
+        "kote": 50,
+        "dou": 35,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 40,
+        "kote": 45,
+        "dou": 50,
+        "tsuki": 50
+      },
+      "attack_rate": 55,
+      "defend_rate": 40,
+      "hansoku_rate": 15,
+      "stamina": 50
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Võ Nguyệt Đức",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 67,
+        "kote": 65,
+        "dou": 70,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 70,
+        "kote": 70,
+        "dou": 70,
+        "tsuki": 50
+      },
+      "attack_rate": 65,
+      "defend_rate": 45,
+      "hansoku_rate": 15,
+      "stamina": 65
+    },
+    "styleModifiers": {
+        "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+    },
+    "styleWeights": {
+        "Chudan": 0.7,
+    "Jodan": 0.3
+    }
+  },
+  {
+    "name": "Phan Phúc Lâm",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 65,
+        "kote": 65,
+        "dou": 50,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 60,
+        "kote": 60,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 35,
+      "defend_rate": 65,
+      "hansoku_rate": 10,
+      "stamina": 60
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Phan Việt Thuần",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 50,
+        "kote": 50,
+        "dou": 35,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 40,
+        "kote": 40,
+        "dou": 45,
+        "tsuki": 50
+      },
+      "attack_rate": 39,
+      "defend_rate": 39,
+      "hansoku_rate": 20,
+      "stamina": 55
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  
+  {
+    "name": "Nguyễn Vũ Hoàng",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 65,
+        "kote": 60,
+        "dou": 35,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 60,
+        "dou": 35,
+        "tsuki": 30
+      },
+      "attack_rate": 60,
+      "defend_rate": 50,
+      "hansoku_rate": 15,
+      "stamina": 65
+    },
+    "styleModifiers": {
+        "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+    },
+    "styleWeights": {
+        "Chudan": 0.5,
+    "Jodan": 0.5
+    }
+  },
+  {
+    "name": "Nguyễn Chí Hạo",
+    "styles": [
+      "Chudan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 55,
+        "kote": 50,
+        "dou": 40,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 65,
+        "kote": 60,
+        "dou": 65,
+        "tsuki": 50
+      },
+      "attack_rate": 40,
+      "defend_rate": 55,
+      "hansoku_rate": 15,
+      "stamina": 65
+    },
+    "styleModifiers": {},
+    "styleWeights": {}
+  },
+  {
+    "name": "Đoàn Đăng Khoa",
+    "styles": [
+      "Chudan", "Jodan"
+    ],
+    "baseStats": {
+      "technique": {
+        "men": 60,
+        "kote": 55,
+        "dou": 25,
+        "tsuki": 5
+      },
+      "defense": {
+        "men": 70,
+        "kote": 70,
+        "dou": 45,
+        "tsuki": 25
+      },
+      "attack_rate": 70,
+      "defend_rate": 20,
+      "hansoku_rate": 25,
+      "stamina": 75
+    },
+    "styleModifiers": {
+        "Jodan": {
+      "technique.men": 7,
+      "technique.kote": 7,
+      "defense.dou": -7
+    }
+    },
+    "styleWeights": {
+        "Chudan": 0.1,
+    "Jodan": 0.9
+    }
+  }
+]
