@@ -20,9 +20,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Đà Lạt Kendo Club — Mô phỏng huấn luyện viên",
-  description:
-    "Tuyển chọn đội hình từ danh sách thành viên Đà Lạt Kendo Club và dẫn dắt họ qua giải đấu loại trực tiếp 16 đội.",
+  title: "Đà Lạt Kendo Club",
+  description: "Mô phỏng huấn luyện viên và đấu đối kháng trực tuyến của Đà Lạt Kendo Club.",
 };
 
 export default function RootLayout({
@@ -43,10 +42,10 @@ export default function RootLayout({
         below it. Drop it if <body> ever gets a dynamic class.
       */}
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
-        <header className="border-b border-brass-600/30 bg-forest-900/40 backdrop-blur">
+        <header className="border-b border-forest-700/15 bg-paper/80 backdrop-blur">
           {/* No wrapping: a two-row header eats scarce vertical space on phone. */}
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-6 sm:py-4">
-            <Link href="/" aria-label="Về trang giải đấu">
+            <Link href="/" aria-label="Về trang chủ">
               <Lockup />
             </Link>
             <MainNav />

@@ -79,7 +79,7 @@ export function GameShell() {
         <button
           type="button"
           onClick={restart}
-          className="display text-xs text-bone-faint underline underline-offset-4 transition-colors hover:text-brass-300"
+          className="display text-xs text-bone-faint underline underline-offset-4 transition-colors hover:text-brass-600"
         >
           Chơi lại từ đầu
         </button>

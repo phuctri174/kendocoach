@@ -68,7 +68,7 @@ export function DraftScreen({
       <PositionRail currentIndex={draft.positionIndex} picked={pickedByPosition} />
 
       <header className="flex flex-col items-center gap-0.5 text-center sm:gap-2">
-        <p className="display text-[10px] text-brass-400 sm:text-xs">
+        <p className="display text-[10px] text-brass-600 sm:text-xs">
           Lượt {draft.positionIndex + 1} / 5
         </p>
         <h2 className="display text-2xl text-bone sm:text-4xl">{position}</h2>
@@ -93,7 +93,7 @@ export function DraftScreen({
           type="button"
           onClick={() => setDraft(rerollCandidates(draft))}
           disabled={!rerollAvailable}
-          className="hex-tab bg-forest-700 px-8 py-3 text-brass-300 transition-colors hover:bg-forest-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-200 disabled:cursor-not-allowed disabled:bg-forest-800 disabled:text-bone-faint"
+          className="hex-tab bg-forest-700 px-8 py-3 text-brass-300 transition-colors hover:bg-forest-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-600 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint"
         >
           <span className="display text-sm">
             Đổi cả ba · còn {draft.rerollsLeft} lượt

@@ -1,0 +1,239 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { HexPanel } from "@/components/Hex";
+import { createClient } from "@/lib/supabase/client";
+import type { RoomRow } from "@/lib/rooms/types";
+
+interface ProfileLite {
+  id: string;
+  display_name: string;
+}
+
+const ROOM_IDS = [1, 2, 3, 4, 5] as const;
+
+async function postRoomAction(path: string, roomId: number): Promise<{ error?: string }> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ roomId }),
+  });
+  const body = await res.json().catch(() => null);
+  return res.ok ? {} : { error: body?.error ?? "Có lỗi xảy ra, thử lại." };
+}
+
+/** Five fixed rooms, live via Realtime. No create/configure step — ever. */
+export function RoomLobby({ myUserId, myDisplayName }: { myUserId: string; myDisplayName: string }) {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const [rooms, setRooms] = useState<RoomRow[] | null>(null);
+  const [profiles, setProfiles] = useState<Map<string, string>>(new Map());
+  const [error, setError] = useState<string | null>(null);
+  const [busyRoom, setBusyRoom] = useState<number | null>(null);
+  // Bumped by the realtime subscription below; the fetch effect re-runs off
+  // this instead of an imperative refetch call from inside an effect body.
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: roomRows } = await supabase.from("rooms").select("*").order("id");
+      if (cancelled || !roomRows) return;
+      setRooms(roomRows as RoomRow[]);
+
+      const ids = Array.from(
+        new Set(
+          roomRows.flatMap((r) => [r.occupant_a, r.occupant_b].filter((v): v is string => !!v)),
+        ),
+      );
+      if (ids.length === 0) {
+        setProfiles(new Map());
+        return;
+      }
+      const { data: profileRows } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", ids);
+      if (cancelled) return;
+      setProfiles(new Map((profileRows as ProfileLite[] | null)?.map((p) => [p.id, p.display_name])));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, tick]);
+
+  useEffect(() => {
+    const roomsChannel = supabase
+      .channel("lobby-rooms")
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () =>
+        setTick((n) => n + 1),
+      )
+      .subscribe();
+
+    // Two subscriptions because a Realtime filter is a single column
+    // comparison — one for "I'm player_a", one for "I'm player_b".
+    const matchAChannel = supabase
+      .channel(`lobby-match-a-${myUserId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "matches", filter: `player_a=eq.${myUserId}` },
+        (payload) => router.push(`/tran/${(payload.new as { id: string }).id}`),
+      )
+      .subscribe();
+    const matchBChannel = supabase
+      .channel(`lobby-match-b-${myUserId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "matches", filter: `player_b=eq.${myUserId}` },
+        (payload) => router.push(`/tran/${(payload.new as { id: string }).id}`),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(matchAChannel);
+      supabase.removeChannel(matchBChannel);
+    };
+  }, [supabase, router, myUserId]);
+
+  const myRoomId = rooms?.find((r) => r.occupant_a === myUserId || r.occupant_b === myUserId)?.id ?? null;
+
+  const act = async (path: string, roomId: number) => {
+    setBusyRoom(roomId);
+    setError(null);
+    const result = await postRoomAction(path, roomId);
+    setBusyRoom(null);
+    if (result.error) setError(result.error);
+  };
+
+  if (!rooms) {
+    return <p className="text-center text-sm text-bone-faint">Đang tải phòng chờ…</p>;
+  }
+
+  return (
+    <section className="flex flex-col gap-4 sm:gap-6">
+      <header className="flex flex-col items-center gap-1 text-center">
+        <p className="display text-xs text-brass-600">Đấu đối kháng · Bo5</p>
+        <h2 className="display text-xl text-bone sm:text-2xl">Phòng chờ</h2>
+        <p className="text-xs text-bone-faint">Bạn: {myDisplayName}</p>
+      </header>
+
+      {error && <p className="text-center text-xs text-blood">{error}</p>}
+
+      <ol className="flex flex-col gap-2.5 sm:gap-3">
+        {ROOM_IDS.map((id) => {
+          const room = rooms.find((r) => r.id === id);
+          if (!room) return null;
+          return (
+            <RoomCard
+              key={id}
+              room={room}
+              myUserId={myUserId}
+              nameOf={(uid) => profiles.get(uid) ?? "…"}
+              blockedByOtherRoom={myRoomId !== null && myRoomId !== id}
+              busy={busyRoom === id}
+              onJoin={() => act("/api/rooms/join", id)}
+              onLeave={() => act("/api/rooms/leave", id)}
+              onReady={() => act("/api/rooms/ready", id)}
+            />
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+function RoomCard({
+  room,
+  myUserId,
+  nameOf,
+  blockedByOtherRoom,
+  busy,
+  onJoin,
+  onLeave,
+  onReady,
+}: {
+  room: RoomRow;
+  myUserId: string;
+  nameOf: (uid: string) => string;
+  blockedByOtherRoom: boolean;
+  busy: boolean;
+  onJoin: () => void;
+  onLeave: () => void;
+  onReady: () => void;
+}) {
+  const iAmA = room.occupant_a === myUserId;
+  const iAmB = room.occupant_b === myUserId;
+  const seated = iAmA || iAmB;
+  const full = !!room.occupant_a && !!room.occupant_b;
+  const myReady = iAmA ? room.ready_a : iAmB ? room.ready_b : false;
+  const opponentReady = iAmA ? room.ready_b : iAmB ? room.ready_a : false;
+
+  const seatLabel = (occupant: string | null, ready: boolean) => {
+    if (!occupant) return <span className="text-bone-faint">Trống</span>;
+    return (
+      <span className={ready ? "text-brass-600" : "text-bone"}>
+        {nameOf(occupant)}
+        {ready && " ✓"}
+      </span>
+    );
+  };
+
+  return (
+    <li>
+      <HexPanel cut={14}>
+        <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+          <div className="flex items-center gap-3 text-sm">
+            <span className="display text-xs text-brass-600">Phòng {room.id}</span>
+            <span className="text-bone-faint">·</span>
+            {seatLabel(room.occupant_a, room.ready_a)}
+            <span className="text-bone-faint">vs</span>
+            {seatLabel(room.occupant_b, room.ready_b)}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            {!seated && !full && (
+              <button
+                type="button"
+                onClick={onJoin}
+                disabled={busy || blockedByOtherRoom}
+                className="hex-tab bg-brass-400 px-5 py-2 text-forest-900 transition-colors hover:bg-brass-300 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint"
+              >
+                <span className="display text-xs">Vào phòng</span>
+              </button>
+            )}
+            {!seated && full && (
+              <span className="display px-5 py-2 text-xs text-bone-faint">Đầy</span>
+            )}
+            {seated && !myReady && (
+              <>
+                <button
+                  type="button"
+                  onClick={onLeave}
+                  disabled={busy}
+                  className="hex-tab bg-forest-700 px-4 py-2 text-paper transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint"
+                >
+                  <span className="display text-xs">Rời phòng</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onReady}
+                  disabled={busy || !full}
+                  className="hex-tab bg-brass-400 px-5 py-2 text-forest-900 transition-colors hover:bg-brass-300 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint"
+                >
+                  <span className="display text-xs">{full ? "Sẵn sàng" : "Chờ đối thủ…"}</span>
+                </button>
+              </>
+            )}
+            {seated && myReady && (
+              <span className="display px-5 py-2 text-xs text-brass-600">
+                {opponentReady ? "Đang bắt đầu…" : "Đã sẵn sàng, chờ đối thủ"}
+              </span>
+            )}
+          </div>
+        </div>
+      </HexPanel>
+    </li>
+  );
+}

@@ -35,7 +35,7 @@ export function CandidateCard({
           type="button"
           onClick={onPick}
           disabled={disabled}
-          className="hex-tab w-full bg-brass-400 px-6 py-2 text-forest-900 transition-colors hover:bg-brass-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-200 disabled:cursor-not-allowed disabled:bg-forest-600 disabled:text-bone-faint sm:py-3"
+          className="hex-tab w-full bg-brass-400 px-6 py-2 text-forest-900 transition-colors hover:bg-brass-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-600 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint sm:py-3"
         >
           <span className="display text-sm">Chọn</span>
         </button>

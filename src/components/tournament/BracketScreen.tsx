@@ -44,7 +44,7 @@ export function BracketScreen({
       ) : (
         <>
           <header className="flex flex-col items-center gap-0.5 text-center sm:gap-2">
-            <p className="display text-[10px] text-brass-400 sm:text-xs">
+            <p className="display text-[10px] text-brass-600 sm:text-xs">
               Vòng {round.index} / 4 · Thời gian mỗi trận {formatTimeLimit(round.timeLimitSeconds)}
             </p>
             <h2 className="display text-2xl text-bone sm:text-4xl">{round.label}</h2>
@@ -61,7 +61,7 @@ export function BracketScreen({
             <button
               type="button"
               onClick={onPlay}
-              className="hex-tab bg-brass-400 px-10 py-2.5 text-forest-900 transition-colors hover:bg-brass-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-200 sm:px-12 sm:py-4"
+              className="hex-tab bg-brass-400 px-10 py-2.5 text-forest-900 transition-colors hover:bg-brass-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-600 sm:px-12 sm:py-4"
             >
               <span className="display text-sm sm:text-base">Bắt đầu trận đấu</span>
             </button>
@@ -102,7 +102,7 @@ function BracketPath({
             </HexBadge>
             <span
               className={`display text-center text-[10px] sm:text-xs ${
-                isCurrent ? "text-brass-300" : outcome ? "text-bone-dim" : "text-bone-faint"
+                isCurrent ? "text-brass-600" : outcome ? "text-bone-dim" : "text-bone-faint"
               }`}
             >
               {round.label}
@@ -111,8 +111,8 @@ function BracketPath({
               <button
                 type="button"
                 onClick={() => onReview(i)}
-                className={`text-center text-[11px] leading-tight underline underline-offset-2 transition-colors hover:text-brass-300 ${
-                  won ? "text-brass-300" : "text-blood"
+                className={`text-center text-[11px] leading-tight underline underline-offset-2 transition-colors hover:text-brass-600 ${
+                  won ? "text-brass-600" : "text-blood"
                 }`}
               >
                 {won ? "Thắng" : "Thua"} {outcome.match.result.teamAWins}-
@@ -149,7 +149,7 @@ function OpponentPreview({ state }: { state: TournamentState }) {
       <ul className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
         {opponents.players.map((player) => (
           <li key={player.id}>
-            <HexPanel cut={10} frameClassName="bg-blood/40" bodyClassName="bg-forest-900">
+            <HexPanel cut={10} frameClassName="bg-blood/40" bodyClassName="bg-card">
               <div className="px-2.5 py-1 sm:px-4 sm:py-2">
                 <span className="text-[11px] text-bone-dim sm:text-sm">{player.name}</span>
               </div>
@@ -195,7 +195,7 @@ function LineupEditor({
           <li key={position}>
             <HexPanel className="h-full" cut={14}>
               <div className="flex h-full flex-col items-center gap-1.5 px-2 py-2.5 text-center sm:gap-3 sm:px-4 sm:py-6">
-                <span className="display text-[10px] text-brass-400 sm:text-xs">
+                <span className="display text-[10px] text-brass-600 sm:text-xs">
                   {i + 1} · {position}
                 </span>
                 <span className="display flex-1 text-xs leading-tight text-bone sm:text-base">
@@ -214,7 +214,7 @@ function LineupEditor({
                     onClick={() => move(position, -1)}
                     disabled={i === 0}
                     aria-label={`Chuyển ${person.name} lên vị trí trước`}
-                    className="display bg-forest-700 px-2.5 py-0.5 text-xs text-brass-300 transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:bg-forest-800 disabled:text-bone-faint sm:px-3 sm:py-1"
+                    className="display bg-forest-700 px-2.5 py-0.5 text-xs text-brass-300 transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint sm:px-3 sm:py-1"
                   >
                     ←
                   </button>
@@ -223,7 +223,7 @@ function LineupEditor({
                     onClick={() => move(position, 1)}
                     disabled={i === POSITIONS.length - 1}
                     aria-label={`Chuyển ${person.name} xuống vị trí sau`}
-                    className="display bg-forest-700 px-2.5 py-0.5 text-xs text-brass-300 transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:bg-forest-800 disabled:text-bone-faint sm:px-3 sm:py-1"
+                    className="display bg-forest-700 px-2.5 py-0.5 text-xs text-brass-300 transition-colors hover:bg-forest-600 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint sm:px-3 sm:py-1"
                   >
                     →
                   </button>
@@ -243,8 +243,8 @@ function TournamentOutcome({ state }: { state: TournamentState }) {
 
   return (
     <div className="pine-watermark flex flex-col items-center gap-6 text-center">
-      <CrestMark className="h-20 w-auto" />
-      <h2 className={`display text-4xl ${champion ? "text-brass-300" : "text-blood"}`}>
+      <CrestMark className="h-20 w-20" />
+      <h2 className={`display text-4xl ${champion ? "text-brass-600" : "text-blood"}`}>
         {champion ? "Vô địch" : `Dừng bước ở ${lost?.round.label}`}
       </h2>
       <p className="max-w-lg text-sm text-bone-dim">

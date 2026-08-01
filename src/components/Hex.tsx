@@ -8,8 +8,8 @@ import type { ReactNode } from "react";
 export function HexPanel({
   children,
   className = "",
-  frameClassName = "bg-brass-600/45",
-  bodyClassName = "bg-forest-800",
+  frameClassName = "bg-forest-700/40",
+  bodyClassName = "bg-card",
   inset = 2,
   cut = 22,
 }: {
@@ -63,7 +63,7 @@ export function HexBadge({
       ? "bg-forest-700 text-brass-200"
       : state === "done"
         ? "bg-forest-800 text-brass-300"
-        : "bg-forest-900 text-bone-faint";
+        : "bg-paper-dim text-bone-faint";
 
   return (
     <div className={`hex-tall ${frame} ${className}`}>

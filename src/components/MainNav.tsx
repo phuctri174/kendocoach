@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AuthNavItem } from "@/components/versus/AuthNavItem";
 
 const LINKS = [
-  { href: "/", label: "Giải đấu" },
+  { href: "/", label: "Đấu đối kháng" },
+  { href: "/dau-don", label: "Đấu đơn" },
   { href: "/chi-so", label: "Chỉ số Kendoka" },
 ];
 
@@ -24,13 +26,14 @@ export function MainNav() {
             className={`hex-tab display px-2.5 py-1.5 text-[10px] transition-colors sm:px-4 sm:py-2 sm:text-[11px] ${
               active
                 ? "bg-brass-400 text-forest-900"
-                : "bg-forest-700 text-bone-dim hover:bg-forest-600 hover:text-brass-200"
+                : "bg-forest-700 text-paper hover:bg-forest-600 hover:text-brass-200"
             }`}
           >
             {link.label}
           </Link>
         );
       })}
+      <AuthNavItem />
     </nav>
   );
 }

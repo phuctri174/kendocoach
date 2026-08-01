@@ -24,7 +24,7 @@ export function PositionRail({
             <span
               className={`display text-center text-[10px] sm:text-xs ${
                 state === "active"
-                  ? "text-brass-300"
+                  ? "text-brass-600"
                   : state === "done"
                     ? "text-bone-dim"
                     : "text-bone-faint"

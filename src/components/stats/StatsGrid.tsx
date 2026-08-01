@@ -61,38 +61,6 @@ const GROUPS: StatGroup[] = [
   },
 ];
 
-/** Inline so a single icon doesn't pull in an icon dependency. */
-function LensIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.2}
-      strokeLinecap="round"
-      aria-hidden
-      className={className}
-    >
-      <circle cx="10.5" cy="10.5" r="6.5" />
-      <path d="M15.4 15.4 21 21" />
-    </svg>
-  );
-}
-
-/**
- * Folds a Vietnamese name down for searching, so "tran phuc" finds
- * "Trần Phúc Trí" without the reader having to type the diacritics.
- */
-function fold(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .trim();
-}
-
 function statValue(row: KendokaRow, key: StatKey): number {
   if (key.startsWith("technique.")) {
     return row.technique[key.slice("technique.".length) as keyof Technique];
@@ -104,9 +72,10 @@ function statValue(row: KendokaRow, key: StatKey): number {
 }
 
 export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
-  const [sortKey, setSortKey] = useState<SortKey>("name");
-  const [descending, setDescending] = useState(false);
-  const [query, setQuery] = useState("");
+  // Tổng lực descending is the permanent default view — strongest kendoka
+  // first, no sort step required on load.
+  const [sortKey, setSortKey] = useState<SortKey>("overall");
+  const [descending, setDescending] = useState(true);
 
   // Tổng lực is a real calculation now, not an average — work it out once per
   // player rather than on every sort comparison and every card render.
@@ -116,14 +85,8 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
     return map;
   }, [rows]);
 
-  const matched = useMemo(() => {
-    const needle = fold(query);
-    if (!needle) return rows;
-    return rows.filter((row) => fold(row.name).includes(needle));
-  }, [rows, query]);
-
   const sorted = useMemo(() => {
-    const out = [...matched];
+    const out = [...rows];
     if (sortKey === "name") {
       out.sort((a, b) => a.name.localeCompare(b.name, "vi"));
     } else {
@@ -134,7 +97,7 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
       });
     }
     return descending ? out.reverse() : out;
-  }, [matched, sortKey, descending, strength]);
+  }, [rows, sortKey, descending, strength]);
 
   const select = (key: SortKey) => {
     if (key === sortKey) {
@@ -154,10 +117,10 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
         type="button"
         onClick={() => select(key)}
         aria-pressed={active}
-        className={`hex-tab display px-2 py-1 text-[10px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-200 sm:px-3 sm:py-1.5 sm:text-[11px] ${
+        className={`hex-tab display px-2 py-1 text-[10px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-600 sm:px-3 sm:py-1.5 sm:text-[11px] ${
           active
             ? "bg-brass-400 text-forest-900"
-            : "bg-forest-700 text-bone-dim hover:bg-forest-600 hover:text-brass-200"
+            : "bg-forest-700 text-paper hover:bg-forest-600 hover:text-brass-200"
         }`}
       >
         {label}
@@ -171,33 +134,6 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       <div className="flex flex-col items-center gap-2 sm:gap-3">
-        {/* The focus ring hangs on this unclipped wrapper — hex-tab's clip-path
-            would eat a ring drawn on the field itself. */}
-        <div className="relative w-full max-w-md focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-brass-200">
-          {/* Brass frame per the clipped-shape convention in globals.css. */}
-          <div className="hex-tab bg-brass-500 p-[2px] transition-colors focus-within:bg-brass-200">
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tìm kendoka theo tên…"
-              aria-label="Tìm kendoka theo tên"
-              className="hex-tab w-full bg-forest-800 py-3 pl-12 pr-12 text-sm text-bone placeholder:text-bone-faint focus:bg-forest-900 focus:outline-none"
-            />
-          </div>
-          <LensIcon className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-brass-300" />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label="Xoá tìm kiếm"
-              className="display absolute right-5 top-1/2 -translate-y-1/2 text-xs text-bone-faint transition-colors hover:text-brass-300"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
         <div className="flex flex-wrap items-center justify-center gap-2">
           <span className="display text-[11px] text-bone-faint">Sắp xếp</span>
           {chip("name", "Tên")}
@@ -205,9 +141,6 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
         </div>
 
         <p className="text-xs text-bone-faint">
-          {query
-            ? `${sorted.length} / ${rows.length} kendoka khớp “${query}” · `
-            : ""}
           Đang sắp theo {activeLabel} ·{" "}
           {sortKey === "name"
             ? descending ? "Z → A" : "A → Z"
@@ -219,9 +152,7 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
       </div>
 
       {sorted.length === 0 ? (
-        <p className="pine-watermark py-16 text-center text-sm text-bone-faint">
-          Không tìm thấy kendoka nào khớp “{query}”.
-        </p>
+        <p className="pine-watermark py-16 text-center text-sm text-bone-faint">Chưa có kendoka nào.</p>
       ) : (
         <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sorted.map((row, i) => (
@@ -262,7 +193,7 @@ function KendokaCard({
           <div className="min-w-0">
             <h2 className="display text-base leading-tight text-bone">{row.name}</h2>
             {row.styles.length > 1 && (
-              <p className="text-[11px] text-brass-300">Có thể: {row.styles.join(", ")}</p>
+              <p className="text-[11px] text-brass-600">Có thể: {row.styles.join(", ")}</p>
             )}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-0.5">
@@ -272,7 +203,7 @@ function KendokaCard({
             <span
               className={`display text-[11px] ${
                 highlight === "overall"
-                  ? "bg-brass-400/20 px-1.5 text-brass-200"
+                  ? "bg-brass-400/20 px-1.5 text-brass-600"
                   : "text-bone-faint"
               }`}
               title="Tổng lực — tỉ lệ thắng ước tính trước một đối thủ trung bình"
@@ -284,7 +215,7 @@ function KendokaCard({
 
         {GROUPS.map((group) => (
           <section key={group.label} className="flex flex-col gap-1">
-            <h3 className="display text-[10px] text-brass-400">{group.label}</h3>
+            <h3 className="display text-[10px] text-brass-600">{group.label}</h3>
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1">
               {group.stats.map((stat) => (
                 <StatCell
@@ -309,7 +240,7 @@ function StatCell({ label, value }: { label: string; value: number }) {
         <dd className="text-sm tabular-nums text-bone-dim">{value}</dd>
       </div>
       {/* Thin track so a card can be scanned at a glance, not read digit by digit. */}
-      <div className="h-1 w-full bg-forest-900">
+      <div className="h-1 w-full bg-paper-dim">
         <div
           className="h-full bg-forest-500"
           style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
