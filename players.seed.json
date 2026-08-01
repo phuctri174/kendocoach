@@ -1052,7 +1052,7 @@
       "defense": {
         "men": 40,
         "kote": 40,
-        "dou": 45,
+        "dou": 40,
         "tsuki": 50
       },
       "attack_rate": 39,
@@ -1077,13 +1077,13 @@
         "tsuki": 5
       },
       "defense": {
-        "men": 65,
+        "men": 60,
         "kote": 60,
         "dou": 35,
         "tsuki": 30
       },
-      "attack_rate": 60,
-      "defend_rate": 50,
+      "attack_rate": 55,
+      "defend_rate": 40,
       "hansoku_rate": 15,
       "stamina": 65
     },
