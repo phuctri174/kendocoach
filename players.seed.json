@@ -14,7 +14,7 @@
       "defense": {
         "men": 65,
         "kote": 80,
-        "dou": 80,
+        "dou": 82,
         "tsuki": 50
       },
       "attack_rate": 65,
@@ -44,7 +44,7 @@
         "tsuki": 50
       },
       "attack_rate": 70,
-      "defend_rate": 50,
+      "defend_rate": 55,
       "hansoku_rate": 10,
       "stamina": 80
     },
@@ -70,7 +70,7 @@
         "tsuki": 50
       },
       "attack_rate": 75,
-      "defend_rate": 55,
+      "defend_rate": 60,
       "hansoku_rate": 8,
       "stamina": 80
     },
@@ -87,7 +87,7 @@
         "men": 92,
         "kote": 85,
         "dou": 80,
-        "tsuki": 15
+        "tsuki": 20
       },
       "defense": {
         "men": 80,
@@ -96,7 +96,7 @@
         "tsuki": 50
       },
       "attack_rate": 70,
-      "defend_rate": 55,
+      "defend_rate": 60,
       "hansoku_rate": 5,
       "stamina": 85
     },
