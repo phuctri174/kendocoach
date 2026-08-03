@@ -11,6 +11,14 @@ alter table public.match_history add column format text not null default 'bo5' c
 -- as they are today (format defaults to 'bo5', matching current behavior
 -- unchanged); rooms 4-5 are repurposed to Bo3 rather than deleted and
 -- recreated, and room 6 is new.
+--
+-- rooms.id has had a `check (id between 1 and 5)` constraint since
+-- 0001_init.sql, back when the room count was fixed at exactly 5 — never
+-- revisited since. Widen it to 6 before inserting the new room, or the
+-- insert below fails the old constraint (rooms_id_check).
+alter table public.rooms drop constraint rooms_id_check;
+alter table public.rooms add constraint rooms_id_check check (id between 1 and 6);
+
 update public.rooms set format = 'bo3' where id in (4, 5);
 insert into public.rooms (id, format) values (6, 'bo3');
 
