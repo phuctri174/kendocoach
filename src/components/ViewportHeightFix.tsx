@@ -19,17 +19,46 @@ import { useEffect } from "react";
  * with `100dvh` staying as the fallback for the (very first, pre-hydration)
  * moment before this effect has run, and for any environment where
  * `visualViewport` itself is unavailable.
+ *
+ * This can't be verified from a normal desktop browser — the actual failure
+ * this guards against only shows up inside a real in-app WebView, whose
+ * event dispatch for viewport changes is exactly the kind of thing that
+ * varies unpredictably by engine/version. So rather than trust any single
+ * signal to fire at the right moment, every plausible one is wired up, and
+ * a short settle-in poll covers the case where none of them fire in time
+ * (e.g. the WebView's own chrome finishes animating in slightly after
+ * load). None of this is a substitute for the log panel's own min-height
+ * floor (see MatchViewer.tsx/BoutResultBoard.tsx) — that's what actually
+ * guarantees the log never collapses to a sliver even if every signal here
+ * turns out to report something degenerate.
  */
 export function ViewportHeightFix() {
   useEffect(() => {
-    const target = window.visualViewport ?? window;
     const setHeight = () => {
       const height = window.visualViewport?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty("--app-vh", `${height}px`);
+      if (height > 0) {
+        document.documentElement.style.setProperty("--app-vh", `${height}px`);
+      }
     };
+
     setHeight();
-    target.addEventListener("resize", setHeight);
-    return () => target.removeEventListener("resize", setHeight);
+
+    window.addEventListener("resize", setHeight);
+    window.addEventListener("orientationchange", setHeight);
+    window.visualViewport?.addEventListener("resize", setHeight);
+    window.visualViewport?.addEventListener("scroll", setHeight);
+
+    // Covers a WebView whose chrome (toolbar, etc.) settles into its final
+    // size a beat after load, without a resize event ever firing for it.
+    const settleTimers = [100, 300, 800, 1500, 3000].map((delay) => setTimeout(setHeight, delay));
+
+    return () => {
+      window.removeEventListener("resize", setHeight);
+      window.removeEventListener("orientationchange", setHeight);
+      window.visualViewport?.removeEventListener("resize", setHeight);
+      window.visualViewport?.removeEventListener("scroll", setHeight);
+      settleTimers.forEach(clearTimeout);
+    };
   }, []);
 
   return null;

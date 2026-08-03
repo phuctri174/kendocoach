@@ -76,10 +76,15 @@ export async function POST(_request: Request, { params }: { params: Promise<{ ga
   const offered = offer.offered as string[];
   const augmentId = offered[0];
 
-  // Same own-column-null guard as the manual pick route.
+  // Same own-column-null guard as the manual pick route — and same reason
+  // augment_seq isn't computed here: two players' timeouts can expire close
+  // together (both offers start from ~the same augments/start call), so
+  // this is the same concurrent-per-side-column shape 0012_atomic_seq_bump.sql
+  // fixed for the manual pick route. The trigger already watches
+  // augment_pick_a/b, so it covers this write too regardless of what's sent.
   const { data: updated, error } = await admin
     .from("match_games")
-    .update({ [column]: augmentId, augment_seq: game.augment_seq + 1 })
+    .update({ [column]: augmentId })
     .eq("id", gameId)
     .is(column, null)
     .select()

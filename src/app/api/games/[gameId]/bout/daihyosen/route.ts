@@ -63,9 +63,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
     buildLiveModifier,
   });
 
+  // bout_seq is bumped by the match_games_bump_seq trigger
+  // (0013_atomic_bout_seq_bump.sql), not computed here.
   const { data: updated, error } = await admin
     .from("match_games")
-    .update({ result: final, bout_seq: game.bout_seq + 1 })
+    .update({ result: final })
     .eq("id", gameId)
     .is("result", null)
     .select()

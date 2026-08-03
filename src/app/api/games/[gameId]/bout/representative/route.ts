@@ -68,9 +68,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
   // Guarded on this side's own column still being null — not on bout_seq,
   // for the same reason lineup_a/lineup_b are: A and B pick independently
   // and concurrently, so a shared counter would produce false conflicts.
+  // bout_seq is bumped by the match_games_bump_seq trigger
+  // (0013_atomic_bout_seq_bump.sql), not computed from this request's
+  // pre-fetch — a JS-side increment here would race with the opponent's
+  // concurrent representative pick and lose an increment, the same bug
+  // 0012_atomic_seq_bump.sql fixed for lineup_seq/augment_seq/item_seq.
   const { data: updated, error } = await admin
     .from("match_games")
-    .update({ [column]: representativeId, bout_seq: game.bout_seq + 1 })
+    .update({ [column]: representativeId })
     .eq("id", gameId)
     .is(column, null)
     .select()

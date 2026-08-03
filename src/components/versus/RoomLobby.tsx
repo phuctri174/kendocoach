@@ -11,7 +11,7 @@ interface ProfileLite {
   display_name: string;
 }
 
-const ROOM_IDS = [1, 2, 3, 4, 5] as const;
+const ROOM_IDS = [1, 2, 3, 4, 5, 6] as const;
 
 async function postRoomAction(path: string, roomId: number): Promise<{ error?: string }> {
   const res = await fetch(path, {
@@ -23,7 +23,8 @@ async function postRoomAction(path: string, roomId: number): Promise<{ error?: s
   return res.ok ? {} : { error: body?.error ?? "Có lỗi xảy ra, thử lại." };
 }
 
-/** Five fixed rooms, live via Realtime. No create/configure step — ever. */
+/** Six fixed rooms, live via Realtime — 3 locked to Bo5, 3 to Bo3, format
+ *  fixed per room rather than chosen per-match. No create/configure step — ever. */
 export function RoomLobby({ myUserId, myDisplayName }: { myUserId: string; myDisplayName: string }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -186,7 +187,7 @@ export function RoomLobby({ myUserId, myDisplayName }: { myUserId: string; myDis
   return (
     <section className="flex flex-col gap-4 sm:gap-6">
       <header className="flex flex-col items-center gap-1 text-center">
-        <p className="display text-xs text-brass-600">Đấu đối kháng · Bo5</p>
+        <p className="display text-xs text-brass-600">Đấu đối kháng</p>
         <h2 className="display text-xl text-bone sm:text-2xl">Phòng chờ</h2>
         <p className="text-xs text-bone-faint">Bạn: {myDisplayName}</p>
       </header>
@@ -258,6 +259,9 @@ function RoomCard({
         <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
           <div className="flex items-center gap-3 text-sm">
             <span className="display text-xs text-brass-600">Phòng {room.id}</span>
+            <span className="hex-tab display bg-forest-700 px-1.5 py-0.5 text-[10px] text-brass-300">
+              {room.format === "bo3" ? "BO3" : "BO5"}
+            </span>
             <span className="text-bone-faint">·</span>
             {seatLabel(room.occupant_a, room.ready_a)}
             <span className="text-bone-faint">vs</span>

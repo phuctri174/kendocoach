@@ -13,9 +13,11 @@ import type { MatchGameRow } from "@/lib/versus/draft";
 import { toPlayers, type Player, type StatPath } from "@/lib/kendo";
 import {
   activeAugmentIdsFor,
+  dynamicAugments,
   qualifyingAugments,
   resolvePlayerBonuses,
 } from "@/lib/versus/bout";
+import type { Augment } from "@/lib/versus/augments";
 import { CLUB_ROSTER } from "@/data/club";
 
 const PERSON_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p]));
@@ -40,6 +42,7 @@ interface MatchRow {
   series_score_b: number;
   current_game_number: number;
   status: string;
+  format: "bo3" | "bo5";
   /** Each side's whole, permanent, non-consumable item inventory — every
    *  item ever picked in an even game, still available to equip every game
    *  after (see LineupBoard). */
@@ -72,11 +75,13 @@ interface MatchRow {
  * and both `result`/`bout_provisional` collapse into the final `result`.
  * Either way, the winning route call also advances the series score / game
  * number / completion on `matches`. Moving from a finished game's result
- * screen to the next game is a deliberate "Tiếp tục" click (`goToNextGame`,
- * which just resets `game` to undefined) rather than automatic — the server
- * has already advanced match.current_game_number by the time the result is
- * showing, so the initial-fetch effect would otherwise yank the result out
- * from under whoever is still reading it.
+ * screen to the next game is a deliberate "Tiếp tục" click on BOTH sides
+ * (`confirmContinue`/continue_a/continue_b, resetting `game` to undefined
+ * only once both are true) rather than automatic — the server has already
+ * advanced match.current_game_number by the time the result is showing, so
+ * the initial-fetch effect would otherwise yank the result out from under
+ * whoever is still reading it, and a single side's own click must not do
+ * that to the other side either.
  */
 export default function MatchPage({ params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = use(params);
@@ -85,6 +90,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
   const [match, setMatch] = useState<MatchRow | null | undefined>(undefined);
   const [names, setNames] = useState<{ a: string; b: string } | null>(null);
   const [game, setGame] = useState<MatchGameRow | null | undefined>(undefined);
+  const [spectatorLinkCopied, setSpectatorLinkCopied] = useState(false);
+  const [showSpectatorLink, setShowSpectatorLink] = useState(false);
   // Undefined until fetched, null once fetched with nothing to show (already
   // locked in, or this game has no augment round). Never touched by
   // Realtime — it only ever comes from this player's own /augments/start
@@ -126,9 +133,10 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
   // Fetches/creates the row for match.current_game_number exactly once —
   // guarded on `game === undefined` rather than re-running whenever `match`
   // changes (its series score / current_game_number update via Realtime
-  // every time a bout concludes). Moving to the next game is a deliberate
-  // user action (see goToNextGame below), not something this effect should
-  // do on its own the instant the server advances the match row — otherwise
+  // every time a bout concludes). Moving to the next game is a deliberate,
+  // both-sides-confirmed action (see confirmContinue below), not something
+  // this effect should do on its own the instant the server advances the
+  // match row — otherwise
   // the still-finished game's result screen would get yanked out from under
   // whoever is still reading it.
   useEffect(() => {
@@ -163,11 +171,6 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
       supabase.removeChannel(channel);
     };
   }, [supabase, matchId]);
-
-  /** Dismisses the just-finished game's result and moves on to whatever
-   *  match.current_game_number is now — already advanced server-side by
-   *  /bout/run the moment the game concluded. */
-  const goToNextGame = () => setGame(undefined);
 
   const gameId = game?.id;
   const isOddGame = game != null && game.game_number % 2 === 1;
@@ -229,16 +232,24 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
     : [];
   const activeAugmentIdsA = game ? activeAugmentIdsFor("A", allAugmentRows, game.game_number) : [];
   const activeAugmentIdsB = game ? activeAugmentIdsFor("B", allAugmentRows, game.game_number) : [];
-  const augmentBadgesA: EquipDisplay[] = qualifyingAugments(activeAugmentIdsA, pickedA, rawPlayersA, rawPlayersB).map((a) => ({
+  const toEquipDisplay = (a: Augment): EquipDisplay => ({
     name: a.name,
     description: a.description,
     effects: a.effects,
-  }));
-  const augmentBadgesB: EquipDisplay[] = qualifyingAugments(activeAugmentIdsB, pickedB, rawPlayersB, rawPlayersA).map((a) => ({
-    name: a.name,
-    description: a.description,
-    effects: a.effects,
-  }));
+  });
+  // dan_nice/dan_fighting never show up via qualifyingAugments (their
+  // condition is "did this side land an ippon during THIS bout", not
+  // something a static per-game gate can evaluate) — dynamicAugments badges
+  // them unconditionally instead, purely so a picked one isn't invisible
+  // everywhere in the UI (see that function's own comment).
+  const augmentBadgesA: EquipDisplay[] = [
+    ...qualifyingAugments(activeAugmentIdsA, pickedA, rawPlayersA, rawPlayersB),
+    ...dynamicAugments(activeAugmentIdsA),
+  ].map(toEquipDisplay);
+  const augmentBadgesB: EquipDisplay[] = [
+    ...qualifyingAugments(activeAugmentIdsB, pickedB, rawPlayersB, rawPlayersA),
+    ...dynamicAugments(activeAugmentIdsB),
+  ].map(toEquipDisplay);
 
   // Augments-only bonus (no items) — for LineupBoard, which still needs to
   // layer its own locally-arranged (not yet confirmed) equip choices on top
@@ -409,6 +420,28 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
     if (res.ok && body) applyGameUpdate(body as MatchGameRow);
   };
 
+  // Stage 3: locks in this side's own "ready to move past this result"
+  // click — does NOT itself dismiss the screen. Moving on to whatever
+  // match.current_game_number is now (already advanced server-side by
+  // /bout/run the moment the game concluded) only happens once BOTH sides
+  // have clicked, via the reset right below watching continue_a/b — one
+  // player clicking must not advance them alone while the other is still
+  // looking at this same result.
+  const confirmContinue = async () => {
+    if (!gameId) return;
+    const res = await fetch(`/api/games/${gameId}/continue`, { method: "POST" });
+    const body = await res.json().catch(() => null);
+    if (res.ok && body) applyGameUpdate(body as MatchGameRow);
+  };
+
+  // Adjusted during render rather than in an effect (same "you might not
+  // need an effect" pattern as myOfferGameId above) — resetting `game` here
+  // clears continue_a/b along with it, so the condition can't re-fire on the
+  // next render.
+  if (game?.continue_a && game.continue_b) {
+    setGame(undefined);
+  }
+
   if (match === undefined || myUserId === undefined) {
     return <p className="text-center text-sm text-bone-faint">Đang tải trận đấu…</p>;
   }
@@ -432,7 +465,7 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
   return (
     <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
       <header className="shrink-0 flex flex-col items-center gap-1 text-center">
-        <p className="display text-xs text-brass-600">Đấu đối kháng · Bo5</p>
+        <p className="display text-xs text-brass-600">Đấu đối kháng · {match.format === "bo3" ? "Bo3" : "Bo5"}</p>
         <h2 className="display text-xl text-bone sm:text-2xl">
           {names?.a ?? "…"} <span className="px-2 text-brass-600">vs</span> {names?.b ?? "…"}
         </h2>
@@ -440,6 +473,31 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
           {match.series_score_a} — {match.series_score_b}
         </p>
         <p className="text-sm text-bone-faint">Ván {game?.game_number ?? match.current_game_number}</p>
+        <button
+          type="button"
+          onClick={async () => {
+            const url = `${window.location.origin}/tran/${matchId}/xem`;
+            setSpectatorLinkCopied(false);
+            try {
+              await navigator.clipboard.writeText(url);
+              setSpectatorLinkCopied(true);
+              setTimeout(() => setSpectatorLinkCopied(false), 2000);
+            } catch {
+              // Clipboard access can be blocked in some embedded browsers —
+              // showSpectatorLink below falls back to a plain selectable
+              // URL either way, so this just skips the "copied!" feedback.
+            }
+            setShowSpectatorLink(true);
+          }}
+          className="text-xs text-brass-600 underline underline-offset-4 hover:no-underline"
+        >
+          {spectatorLinkCopied ? "Đã sao chép liên kết xem trận đấu!" : "Sao chép liên kết cho người xem"}
+        </button>
+        {showSpectatorLink && (
+          <p className="max-w-full break-all text-[11px] text-bone-faint select-all">
+            {typeof window !== "undefined" ? `${window.location.origin}/tran/${matchId}/xem` : ""}
+          </p>
+        )}
       </header>
 
       {game === undefined && (
@@ -519,7 +577,7 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
             basePlayerById={basePlayerById}
             bonusByPlayer={mapToRecord(fullBonusByPlayer)}
             seriesDecided={false}
-            onContinue={goToNextGame}
+            onContinue={confirmContinue}
             daihyosenPending={{
               myRoster: mySide === "A" ? game.draft_state.pickedA : game.draft_state.pickedB,
               myRepresentative: (mySide === "A" ? game.representative_a : game.representative_b) ?? null,
@@ -544,7 +602,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
             basePlayerById={basePlayerById}
             bonusByPlayer={mapToRecord(fullBonusByPlayer)}
             seriesDecided={match.status === "completed"}
-            onContinue={goToNextGame}
+            onContinue={confirmContinue}
+            continueConfirmed={(mySide === "A" ? game.continue_a : game.continue_b) ?? false}
           />
         </div>
       )}

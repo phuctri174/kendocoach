@@ -16,11 +16,15 @@
  * game 2 onward; game 1 has no previous result, so it defaults to "A", same
  * as when this schedule was hardcoded to always start with A).
  *
- * Pool recycling: each phase's roll excludes only players actually DRAFTED
- * so far this game (pickedA ∪ pickedB) — never the previous phase's
- * unpicked leftovers, which are eligible to reappear. The full roster
- * resets between games; that reset is the caller's job (a fresh
- * initialDraftState per game), not this module's.
+ * Pool recycling: each phase's roll excludes players actually DRAFTED so far
+ * this game (pickedA ∪ pickedB) plus `seriesExcluded` — never the previous
+ * phase's unpicked leftovers, which are eligible to reappear. Whether the
+ * roster resets between games or stays exclusive for the whole series is a
+ * per-format rule the caller decides (games/start/route.ts): Bo5 resets it
+ * every game (seriesExcluded always empty there), Bo3 carries every earlier
+ * game's picks forward as seriesExcluded so nobody drafted in game 1 or 2
+ * can reappear in game 3 — this module just applies whatever exclusion set
+ * it's given, the same way regardless of which rule produced it.
  */
 
 import type { AugmentTier } from "./augments";
@@ -82,6 +86,11 @@ export interface MatchGameRow {
    *  log) — not just the win/loss summary, since the result viewer replays
    *  the narration log. */
   result: TeamMatch | null;
+  /** Each side's own "ready to move past this game's result" flag — the
+   *  client only resets to the next game once both are true (see
+   *  api/games/[gameId]/continue), never on just its own click. */
+  continue_a: boolean;
+  continue_b: boolean;
 }
 
 export interface BoutProvisional {
@@ -108,6 +117,11 @@ export interface DraftState {
    *  pickedA/pickedB mean (still literally "picked by DB player_a/_b") —
    *  only which side's turn comes first/second at each step. */
   firstPicker: DraftSide;
+  /** Ids excluded from every roll this game on top of pickedA/pickedB —
+   *  empty for Bo5 (full roster resets every game) and for Bo3's own game 1;
+   *  from Bo3's game 2 onward, every id drafted in an earlier game of this
+   *  same series (see games/start/route.ts). */
+  seriesExcluded: string[];
 }
 
 interface TurnSpec {
@@ -153,17 +167,22 @@ export function rollPool(allIds: readonly string[], excludeIds: ReadonlySet<stri
   return eligible.slice(0, Math.min(count, eligible.length));
 }
 
-export function initialDraftState(allIds: readonly string[], firstPicker: DraftSide = "A"): DraftState {
+export function initialDraftState(
+  allIds: readonly string[],
+  firstPicker: DraftSide = "A",
+  seriesExcluded: readonly string[] = [],
+): DraftState {
   return {
     phase: 1,
     turnIndex: 0,
     picksRemainingInTurn: PHASE_TURNS[1][0].count,
-    pool: rollPool(allIds, new Set()),
+    pool: rollPool(allIds, new Set(seriesExcluded)),
     pickedA: [],
     pickedB: [],
     turnDeadline: turnDeadline(),
     status: "drafting",
     firstPicker,
+    seriesExcluded: [...seriesExcluded],
   };
 }
 
@@ -200,7 +219,7 @@ export function applyPick(state: DraftState, side: DraftSide, candidateId: strin
 
   if (phase < 3) {
     const nextPhase = (phase + 1) as Phase;
-    const drafted = new Set([...pickedA, ...pickedB]);
+    const drafted = new Set([...pickedA, ...pickedB, ...state.seriesExcluded]);
     return {
       phase: nextPhase,
       turnIndex: 0,
@@ -211,6 +230,7 @@ export function applyPick(state: DraftState, side: DraftSide, candidateId: strin
       turnDeadline: turnDeadline(),
       status: "drafting",
       firstPicker: state.firstPicker,
+      seriesExcluded: state.seriesExcluded,
     };
   }
 

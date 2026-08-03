@@ -136,7 +136,7 @@ export function MatchViewer({
         <MatchSummary
           outcome={outcome}
           bouts={all}
-          progress={progress}
+          resolved={resolved}
           showAll={finished}
           latestScore={latestScore}
         />
@@ -144,14 +144,19 @@ export function MatchViewer({
 
       {/* Everything above this row fits the viewport like the rest of the
           app — this row alone is the exception, and even within it, only
-          the log panel scrolls. min-h-0 lets the row (and the log column
-          inside it) shrink below their natural content height so the log's
-          own overflow-y-auto is what activates, instead of the page. */}
+          the log panel scrolls. min-h-0 on the row/column lets THEM shrink
+          below natural content height; the log panel itself instead gets a
+          hard min-h floor (below) rather than min-h-0, so on a viewport
+          that's genuinely too short for everything to fit (seen inside some
+          in-app WebViews, where the truly available height can come in
+          smaller than expected), the log never gets squeezed down to an
+          unreadable sliver — the page falls back to scrolling past that
+          floor instead, via main's own overflow-y-auto. */}
       <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-none lg:gap-6">
         <Scoreboard bouts={all} progress={progress} resolved={resolved} showAll={finished} />
 
         <div className="flex min-h-0 flex-col gap-2 sm:gap-3">
-          <HexPanel cut={18} className="min-h-0 flex-1">
+          <HexPanel cut={18} className="min-h-[220px] flex-1">
             <div
               ref={logRef}
               className="flex h-full flex-col gap-1 overflow-y-auto px-3 py-2 sm:px-5 sm:py-5"
@@ -205,28 +210,33 @@ export function MatchViewer({
 function MatchSummary({
   outcome,
   bouts,
-  progress,
+  resolved,
   showAll,
   latestScore,
 }: {
   outcome: RoundOutcome;
   bouts: Bout[];
-  progress: Map<string, number>;
+  resolved: Set<string>;
   showAll: boolean;
   latestScore: { a: number; b: number };
 }) {
+  // Gated on `resolved` (a bout-result beat actually revealed), not on how
+  // far the log has narrated into a bout's exchanges — a bout's own final
+  // ippon count is already fixed the instant its last SCORING exchange is
+  // revealed, often several beats before its bout-result line (misses,
+  // fatigue lines, hansoku warnings can still follow), so gating on
+  // exchange progress let the header show a bout's outcome early. Same fix
+  // shape as the win-highlight below, which already gates on `resolved`.
   const ippons = useMemo(() => {
     let a = 0;
     let b = 0;
     for (const bout of bouts) {
-      const through = showAll ? bout.exchanges.length - 1 : (progress.get(bout.id) ?? -1);
-      if (through < 0) continue;
-      const last = bout.exchanges[through];
-      a += last.scoreAfter.a;
-      b += last.scoreAfter.b;
+      if (!showAll && !resolved.has(bout.id)) continue;
+      a += bout.result.ipponsA;
+      b += bout.result.ipponsB;
     }
     return { a, b };
-  }, [bouts, progress, showAll]);
+  }, [bouts, resolved, showAll]);
 
   return (
     <HexPanel cut={14}>

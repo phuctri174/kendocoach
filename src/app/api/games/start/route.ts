@@ -60,19 +60,33 @@ export async function POST(request: Request) {
   // authoritative record of who won, and can't drift out of sync with
   // itself the way a duplicated column could under a race/retry.
   let firstPicker: DraftSide = "A";
+  // Bo3's draft pool stays exclusive for the whole series (unlike Bo5, which
+  // resets it every game) — every id drafted in an earlier game of this
+  // match gets excluded from game 2/3's roll too. Both this and the comeback
+  // seed below only need earlier games' own rows, so one fetch covers both.
+  let seriesExcluded: string[] = [];
   if (gameNumber > 1) {
-    const { data: prevGame } = await admin
+    const { data: priorGames } = await admin
       .from("match_games")
-      .select("result")
+      .select("game_number, result, draft_state")
       .eq("match_id", matchId)
-      .eq("game_number", gameNumber - 1)
-      .maybeSingle();
+      .lt("game_number", gameNumber)
+      .order("game_number", { ascending: true });
+
+    const prevGame = priorGames?.find((g) => g.game_number === gameNumber - 1);
     const prevWinner = (prevGame?.result as TeamMatch | null)?.result.winner;
     // A prior draw shouldn't really happen (see advanceSeriesAfterGame) —
     // falls through to the "A" default same as game 1, rather than seeding
     // anything from an outcome that isn't really a clean win/loss.
     if (prevWinner === "A") firstPicker = "B";
     else if (prevWinner === "B") firstPicker = "A";
+
+    if (match.format === "bo3") {
+      seriesExcluded = (priorGames ?? []).flatMap((g) => {
+        const state = g.draft_state as { pickedA?: string[]; pickedB?: string[] } | null;
+        return [...(state?.pickedA ?? []), ...(state?.pickedB ?? [])];
+      });
+    }
   }
 
   const { data: created, error } = await admin
@@ -81,7 +95,7 @@ export async function POST(request: Request) {
       match_id: matchId,
       game_number: gameNumber,
       time_limit_seconds: GAME_TIME_LIMITS[gameNumber] ?? 120,
-      draft_state: initialDraftState(ROSTER_IDS, firstPicker),
+      draft_state: initialDraftState(ROSTER_IDS, firstPicker, seriesExcluded),
     })
     .select()
     .single();

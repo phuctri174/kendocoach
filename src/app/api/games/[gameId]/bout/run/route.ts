@@ -81,6 +81,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
 
   const tied = probe.result.decidedBy === "daihyosen";
 
+  // bout_seq itself is bumped by the match_games_bump_seq trigger
+  // (0013_atomic_bout_seq_bump.sql), not computed here — see that migration
+  // for why a JS-side increment would be unsafe for bout/representative's
+  // concurrent-writer shape (this route's own guard is the single-writer
+  // shape, which was never actually racy, but the counter is one shared
+  // column across all three routes so it's owned in one place).
   const writePayload: Record<string, unknown> = tied
     ? {
         bout_provisional: {
@@ -91,9 +97,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
           teamAIppons: probe.bouts.reduce((sum, b) => sum + b.result.ipponsA, 0),
           teamBIppons: probe.bouts.reduce((sum, b) => sum + b.result.ipponsB, 0),
         } satisfies BoutProvisional,
-        bout_seq: game.bout_seq + 1,
       }
-    : { result: probe, bout_seq: game.bout_seq + 1 };
+    : { result: probe };
 
   const { data: updated, error } = await admin
     .from("match_games")

@@ -213,6 +213,33 @@ export function qualifyingAugments(
   return result;
 }
 
+const DYNAMIC_AUGMENT_IDS = new Set(["dan_nice", "dan_fighting"]);
+
+/**
+ * dan_nice/dan_fighting deliberately return {} from resolveConditionalEffects
+ * (see its own doc comment) — their entire contribution is the live
+ * per-exchange hook in buildLiveModifierForGame, which means qualifyingAugments
+ * never surfaces them, and a picked-and-active dan_nice/dan_fighting has
+ * historically shown up nowhere in the UI at all: no badge, no log mention,
+ * nothing — even though its effect on stats when it does fire is large (see
+ * augments_catalog.json), a player has no way to even know it's equipped.
+ * This is a second, parallel badge list specifically for those two — same
+ * Augment shape as qualifyingAugments' output, unconditional on this game's
+ * roster (their condition is "did this side land an ippon *during* the bout
+ * being watched right now", which isn't something a static per-game gate can
+ * evaluate), just "picked and still active for the series" like any other
+ * badge. Callers show both lists.
+ */
+export function dynamicAugments(activeAugmentIds: readonly string[]): Augment[] {
+  const result: Augment[] = [];
+  for (const id of activeAugmentIds) {
+    if (!DYNAMIC_AUGMENT_IDS.has(id)) continue;
+    const augment = AUGMENT_BY_ID.get(id);
+    if (augment) result.push(augment);
+  }
+  return result;
+}
+
 /**
  * Every drafted player's total stat bonus for this game — their own side's
  * qualifying augments, whatever opp. crossover the *other* side's augments
@@ -533,7 +560,13 @@ interface MatchRowForSeries {
   series_score_a: number;
   series_score_b: number;
   current_game_number: number;
+  format: "bo3" | "bo5";
 }
+
+/** Wins needed to decide the series — the only thing that actually differs
+ *  between the two formats at this layer; everything else (odd/even
+ *  augment/item alternation, per-game draft) already generalizes on its own. */
+const WINS_TO_DECIDE: Record<"bo3" | "bo5", number> = { bo3: 2, bo5: 3 };
 
 /**
  * Advances the series after a game concludes — shared by the route that
@@ -560,7 +593,7 @@ export async function advanceSeriesAfterGame(
   const winnerUid = winner === "A" ? match.player_a : match.player_b;
   const scoreField = winner === "A" ? "series_score_a" : "series_score_b";
   const newScore = (winner === "A" ? match.series_score_a : match.series_score_b) + 1;
-  const seriesDecided = newScore >= 3;
+  const seriesDecided = newScore >= WINS_TO_DECIDE[match.format];
 
   await admin
     .from("matches")
@@ -580,6 +613,7 @@ export async function advanceSeriesAfterGame(
       winner: winnerUid,
       series_score_a: winner === "A" ? newScore : match.series_score_a,
       series_score_b: winner === "B" ? newScore : match.series_score_b,
+      format: match.format,
     });
   }
 }

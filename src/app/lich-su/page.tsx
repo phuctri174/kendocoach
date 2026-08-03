@@ -62,7 +62,7 @@ export default async function LichSuPage() {
   return (
     <section className="flex flex-col gap-4 sm:gap-6">
       <header className="flex flex-col items-center gap-1 text-center">
-        <p className="display text-xs text-brass-600">Đấu đối kháng · Bo5</p>
+        <p className="display text-xs text-brass-600">Đấu đối kháng</p>
         <h2 className="display text-xl text-bone sm:text-2xl">Lịch sử đấu</h2>
       </header>
 

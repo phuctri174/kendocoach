@@ -8,7 +8,8 @@ import type { ItemEquip } from "@/lib/versus/draft";
 import { createClient } from "@/lib/supabase/server";
 import { CLUB_ROSTER } from "@/data/club";
 import { toPlayers, type Player, type StatPath } from "@/lib/kendo";
-import { activeAugmentIdsFor, qualifyingAugments, resolvePlayerBonuses } from "@/lib/versus/bout";
+import { activeAugmentIdsFor, dynamicAugments, qualifyingAugments, resolvePlayerBonuses } from "@/lib/versus/bout";
+import type { Augment } from "@/lib/versus/augments";
 import type { TeamMatch } from "@/lib/kendo/types";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ interface MatchRow {
   series_score_a: number;
   series_score_b: number;
   status: string;
+  format: "bo3" | "bo5";
 }
 
 interface GameRow {
@@ -107,12 +109,24 @@ export default async function LichSuMatchPage({ params }: { params: Promise<{ ma
     const activeAugmentIdsA = activeAugmentIdsFor("A", augmentRowsSoFar, game.game_number);
     const activeAugmentIdsB = activeAugmentIdsFor("B", augmentRowsSoFar, game.game_number);
 
-    const augmentBadgesA: EquipDisplay[] = qualifyingAugments(activeAugmentIdsA, pickedA, rawPlayersA, rawPlayersB).map(
-      (a) => ({ name: a.name, description: a.description, effects: a.effects }),
-    );
-    const augmentBadgesB: EquipDisplay[] = qualifyingAugments(activeAugmentIdsB, pickedB, rawPlayersB, rawPlayersA).map(
-      (a) => ({ name: a.name, description: a.description, effects: a.effects }),
-    );
+    const toEquipDisplay = (a: Augment): EquipDisplay => ({
+      name: a.name,
+      description: a.description,
+      effects: a.effects,
+    });
+    // dan_nice/dan_fighting never show up via qualifyingAugments (their
+    // condition depends on what happened live within a bout, not this
+    // game's roster) — dynamicAugments badges them unconditionally so a
+    // picked one isn't invisible everywhere in the UI, including in this
+    // historical replay.
+    const augmentBadgesA: EquipDisplay[] = [
+      ...qualifyingAugments(activeAugmentIdsA, pickedA, rawPlayersA, rawPlayersB),
+      ...dynamicAugments(activeAugmentIdsA),
+    ].map(toEquipDisplay);
+    const augmentBadgesB: EquipDisplay[] = [
+      ...qualifyingAugments(activeAugmentIdsB, pickedB, rawPlayersB, rawPlayersA),
+      ...dynamicAugments(activeAugmentIdsB),
+    ].map(toEquipDisplay);
 
     const bonusByPlayerMap = resolvePlayerBonuses({
       pickedA,
@@ -142,7 +156,7 @@ export default async function LichSuMatchPage({ params }: { params: Promise<{ ma
   return (
     <section className="flex flex-col gap-4 sm:gap-6">
       <header className="flex flex-col items-center gap-1 text-center">
-        <p className="display text-xs text-brass-600">Đấu đối kháng · Bo5</p>
+        <p className="display text-xs text-brass-600">Đấu đối kháng · {matchRow.format === "bo3" ? "Bo3" : "Bo5"}</p>
         <h2 className="display text-xl text-bone sm:text-2xl">
           {teamAName} <span className="px-2 text-brass-600">vs</span> {teamBName}
         </h2>

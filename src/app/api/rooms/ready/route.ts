@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   const { data: match, error: matchError } = await admin
     .from("matches")
-    .insert({ room_id: roomId, player_a: room.occupant_a, player_b: room.occupant_b })
+    .insert({ room_id: roomId, player_a: room.occupant_a, player_b: room.occupant_b, format: room.format })
     .select()
     .single();
 
