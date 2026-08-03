@@ -630,6 +630,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
             onContinue={confirmContinue}
             continueConfirmed={(mySide === "A" ? game.continue_a : game.continue_b) ?? false}
             onFullyRevealed={() => setRevealedGameId(game.id)}
+            mySide={mySide}
+            gameWinnerSide={game.result.result.winner === "draw" ? null : game.result.result.winner}
           />
         </div>
       )}

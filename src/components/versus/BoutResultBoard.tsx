@@ -92,6 +92,8 @@ export function BoutResultBoard({
   hideActions = false,
   continueConfirmed = false,
   onFullyRevealed,
+  mySide,
+  gameWinnerSide,
 }: {
   match: DisplayMatch;
   teamAName: string;
@@ -145,6 +147,17 @@ export function BoutResultBoard({
    *  on this callback, not on raw match/series state, or it'll spoil the
    *  ending mid-narration — see tran/[matchId]/page.tsx and xem/page.tsx. */
   onFullyRevealed?: () => void;
+  /** This viewer's own side, if they have one — undefined/null for a
+   *  spectator, who has no "you" to speak of. Drives whether the outcome
+   *  label below reads as a personalized "Bạn đã thắng/thua" or the neutral,
+   *  side-naming form. */
+  mySide?: Side | null;
+  /** This GAME's own winner (not necessarily the series') — always the
+   *  literal side that actually won, straight off `result.winner`, never
+   *  inferred from which side is "A" or which client is asking. `null` for a
+   *  draw (shouldn't happen for a resolved game, daihyosen always breaks
+   *  ties, but kept optional defensively) or while undecided. */
+  gameWinnerSide?: Side | null;
 }) {
   const log = match.log;
   const [shown, setShown] = useState(replay ? log.length : 0);
@@ -247,6 +260,7 @@ export function BoutResultBoard({
           </HexPanel>
 
           <div className="flex shrink-0 flex-col items-center gap-2 sm:gap-3">
+            {finished && gameWinnerSide && <GameOutcomeLabel mySide={mySide} gameWinnerSide={gameWinnerSide} teamAName={teamAName} teamBName={teamBName} />}
             {hideActions ? (
               finished && seriesDecided ? (
                 <p className="display text-sm text-brass-600">Trận đấu đã kết thúc!</p>
@@ -289,6 +303,39 @@ export function BoutResultBoard({
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * This game's own outcome, always computed from the literal winning side
+ * (never hardcoded to "A") and rendered relative to whoever's actually
+ * looking: a real player sees their OWN result ("Bạn đã thắng/thua ván
+ * này"), independently correct on each side's own client since it compares
+ * gameWinnerSide against THAT client's own mySide, not against whatever the
+ * other side's screen happens to show. A spectator has no "mySide" at all,
+ * so they get the neutral, absolute form instead — naming which team won,
+ * no personalized Thắng/Thua wording.
+ */
+function GameOutcomeLabel({
+  mySide,
+  gameWinnerSide,
+  teamAName,
+  teamBName,
+}: {
+  mySide?: Side | null;
+  gameWinnerSide: Side;
+  teamAName: string;
+  teamBName: string;
+}) {
+  if (!mySide) {
+    const winnerName = gameWinnerSide === "A" ? teamAName : teamBName;
+    return <p className="display text-sm text-brass-600">{winnerName} thắng ván này</p>;
+  }
+  const won = gameWinnerSide === mySide;
+  return (
+    <p className={`display text-sm ${won ? "text-brass-600" : "text-blood"}`}>
+      {won ? "Bạn đã thắng ván này!" : "Bạn đã thua ván này."}
+    </p>
   );
 }
 

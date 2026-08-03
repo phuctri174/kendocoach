@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { BoutResultBoard } from "@/components/versus/BoutResultBoard";
+import { DraftBoardSpectator, PickStatusBoard, LineupStatusBoard } from "@/components/versus/SpectateBoards";
 import type { MatchGameRow } from "@/lib/versus/draft";
 import { toPlayers, type Player, type StatPath } from "@/lib/kendo";
 import { activeAugmentIdsFor, dynamicAugments, qualifyingAugments, resolvePlayerBonuses } from "@/lib/versus/bout";
@@ -250,22 +251,38 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
   // /api/games/start (it rejects non-participants regardless), so if the
   // row isn't there yet, this just waits; a real player's own page load
   // creates it, and the realtime subscription below picks it up from there.
+  //
+  // Guarded on `game === undefined` rather than re-running whenever
+  // currentGameNumber changes — the two are NOT interchangeable. matches
+  // and match_games are two different tables with two different Realtime
+  // subscriptions; the server advances matches.current_game_number (and
+  // flips status to "completed") the SAME instant a game concludes, well
+  // before this client has necessarily rendered — let alone finished
+  // narrating — that game's own result. Re-fetching off currentGameNumber
+  // used to race exactly that: the moment the just-concluded game's number
+  // rolled over, this effect would replace the still-narrating `game` with
+  // whatever (if anything) exists at the new number — null, on the series'
+  // final game — yanking the result screen out from under a spectator still
+  // mid-log while the score header above had already flipped to final. Same
+  // root cause and same fix shape as tran/[matchId]/page.tsx's own comment
+  // on this exact effect: only move on once BOTH sides have confirmed
+  // continue (watched below), never automatically.
   useEffect(() => {
-    if (!match || currentGameNumber === undefined) return;
+    if (!match || game !== undefined) return;
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("match_games")
         .select("*")
         .eq("match_id", matchId)
-        .eq("game_number", currentGameNumber)
+        .eq("game_number", match.current_game_number)
         .maybeSingle();
       if (!cancelled) setGame((data as MatchGameRow | null) ?? null);
     })();
     return () => {
       cancelled = true;
     };
-  }, [supabase, matchId, match, currentGameNumber]);
+  }, [supabase, matchId, match, game]);
 
   const gameId = game?.id;
   const isOddGame = game != null && game.game_number % 2 === 1;
@@ -383,6 +400,16 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
     };
   }, [supabase, gameId, applyGameUpdate]);
 
+  // Same reset as tran/[matchId]/page.tsx, adjusted during render rather than
+  // in an effect (the "you might not need an effect" pattern) — moves this
+  // spectator on to whatever match.current_game_number now is only once BOTH
+  // real players have confirmed continue_a/continue_b, never automatically
+  // just because the server advanced current_game_number (see the game-fetch
+  // effect's own comment above for why that would race the narration).
+  if (game?.continue_a && game.continue_b) {
+    setGame(undefined);
+  }
+
   const noop = () => {};
 
   if (match === undefined) {
@@ -444,15 +471,27 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
         <p className="text-center text-sm text-bone-faint">Ván đấu chưa bắt đầu, chờ người chơi vào trận…</p>
       )}
       {game && !draftComplete && (
-        <p className="text-center text-sm text-bone-faint">Đang bốc thăm đội hình…</p>
+        <DraftBoardSpectator draftState={game.draft_state} nameA={names?.a ?? "Người chơi A"} nameB={names?.b ?? "Người chơi B"} />
       )}
       {game && draftComplete && !priorPhaseDone && (
-        <p className="text-center text-sm text-bone-faint">
-          {isOddGame ? "Đang chọn bổ trợ…" : "Đang chọn trang bị…"}
-        </p>
+        <PickStatusBoard
+          title={isOddGame ? "Vòng bổ trợ" : "Vòng trang bị"}
+          subtitle={isOddGame && game.augment_tier ? `Bậc lõi của vòng này là: ${game.augment_tier}` : undefined}
+          nameA={names?.a ?? "Người chơi A"}
+          nameB={names?.b ?? "Người chơi B"}
+          pickedA={!!(isOddGame ? game.augment_pick_a : game.item_pick_a)}
+          pickedB={!!(isOddGame ? game.augment_pick_b : game.item_pick_b)}
+        />
       )}
       {game && priorPhaseDone && !(game.lineup_a && game.lineup_b) && (
-        <p className="text-center text-sm text-bone-faint">Đang xếp đội hình…</p>
+        <LineupStatusBoard
+          nameA={names?.a ?? "Người chơi A"}
+          nameB={names?.b ?? "Người chơi B"}
+          rosterA={pickedA}
+          rosterB={pickedB}
+          lockedA={!!game.lineup_a}
+          lockedB={!!game.lineup_b}
+        />
       )}
       {game && lineupsReady && !game.result && !game.bout_provisional && (
         <p className="text-center text-sm text-bone-faint">Đang mô phỏng trận đấu…</p>
@@ -495,6 +534,7 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
             onContinue={noop}
             hideActions
             onFullyRevealed={() => setRevealedGameId(game.id)}
+            gameWinnerSide={game.result.result.winner === "draw" ? null : game.result.result.winner}
           />
         </div>
       )}
