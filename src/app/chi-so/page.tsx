@@ -4,7 +4,7 @@ import { CLUB_ROSTER } from "@/data/club";
 import { stylesFor } from "@/lib/kendo";
 
 export const metadata: Metadata = {
-  title: "Chỉ số của các Kendoka — Đà Lạt Kendo Club",
+  title: "Bảng Xếp Hạng Sức Mạnh theo Chỉ Số của các Kendoka — Đà Lạt Kendo Club",
   description:
     "Bảng chỉ số của toàn bộ thành viên câu lạc bộ, đọc trực tiếp từ players.seed.json.",
 };
@@ -36,10 +36,11 @@ export default function ChiSoPage() {
         <p className="display text-[10px] text-brass-600 sm:text-xs">
           Câu lạc bộ · {rows.length} thành viên
         </p>
-        <h1 className="display text-2xl text-bone sm:text-4xl">Chỉ số của các Kendoka</h1>
+        <h1 className="display text-2xl text-bone sm:text-4xl">Bảng Xếp Hạng Sức Mạnh theo Chỉ Số của các Kendoka</h1>
         {/* The sort bar right below explains itself; this is chrome on phone. */}
         <p className="hidden max-w-2xl text-sm text-bone-dim sm:block">
           Số liệu đọc thẳng từ hồ sơ câu lạc bộ, xếp theo Tổng lực mạnh nhất trước.
+          Tìm theo tên, hoặc sắp xếp lại theo tên và Tổng lực.
         </p>
       </header>
 

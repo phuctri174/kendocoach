@@ -1,4 +1,4 @@
-import { simulateBout, simulateEncho } from "./bout";
+import { simulateBout, simulateEncho, type LiveModifierHook } from "./bout";
 import type { SimConfig } from "./config";
 import { buildMatchLog } from "./narrate";
 import { createRng, type Rng } from "./rng";
@@ -27,6 +27,20 @@ export interface SimulateTeamMatchOptions {
    * `suggestRepresentative` when no pick was made.
    */
   representatives?: { a?: string; b?: string };
+  /**
+   * Builds the live per-exchange hook for one bout (including the daihyosen
+   * tiebreak, if reached), given the team bout-win tally entering it — 0-0
+   * for the first bout, and necessarily tied heading into the tiebreak since
+   * that's only reached when the 5 regular bouts are level. Called once per
+   * bout, fresh, so a caller wanting "sticky once triggered" state (e.g.
+   * active for the rest of that bout after an ippon) can hold it in its own
+   * closure without it leaking into the next bout. Absent by default, and no
+   * existing caller sets it — solo mode's bout resolution is unaffected.
+   */
+  buildLiveModifier?: (context: {
+    teamAWinsSoFar: number;
+    teamBWinsSoFar: number;
+  }) => LiveModifierHook | undefined;
 }
 
 export function lineupPlayers(team: Team): Player[] {
@@ -88,15 +102,29 @@ export function simulateTeamMatch(
   const sideA = lineupPlayers(teamA);
   const sideB = lineupPlayers(teamB);
 
-  const bouts: Bout[] = POSITIONS.map((position, i) =>
-    simulateBout(sideA[i], sideB[i], {
+  // A plain loop rather than .map(), so each bout's live hook can be built
+  // from the win tally the *previous* bouts in this same match actually
+  // produced — buildLiveModifier needs that, not just its own bout's stats.
+  const bouts: Bout[] = [];
+  let runningWinsA = 0;
+  let runningWinsB = 0;
+  for (let i = 0; i < POSITIONS.length; i++) {
+    const position = POSITIONS[i];
+    const bout = simulateBout(sideA[i], sideB[i], {
       id: `${options.id ?? "match"}-${position.toLowerCase()}`,
       position,
       timeLimitSeconds: options.timeLimitSeconds,
       rng,
       config: options.config,
-    }),
-  );
+      dynamicModifier: options.buildLiveModifier?.({
+        teamAWinsSoFar: runningWinsA,
+        teamBWinsSoFar: runningWinsB,
+      }),
+    });
+    bouts.push(bout);
+    if (bout.result.winner === "A") runningWinsA++;
+    else if (bout.result.winner === "B") runningWinsB++;
+  }
 
   let teamAWins = 0;
   let teamBWins = 0;
@@ -129,6 +157,10 @@ export function simulateTeamMatch(
       id: `${options.id ?? "match"}-daihyosen`,
       rng,
       config: options.config,
+      dynamicModifier: options.buildLiveModifier?.({
+        teamAWinsSoFar: teamAWins,
+        teamBWinsSoFar: teamBWins,
+      }),
     });
     teamAIppons += tiebreak.result.ipponsA;
     teamBIppons += tiebreak.result.ipponsB;

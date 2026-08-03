@@ -1,0 +1,83 @@
+[
+  {
+    "id": "men_himo_luyen",
+    "name": "Men Shudo",
+    "icon": "men_himo_luyen.jpg",
+    "description": "Tăng thêm các chỉ số công và thủ về Men.",
+    "effects": {
+      "technique.men": 10,
+      "defense.men": 10
+    }
+  },
+  {
+    "id": "dou_giap_cung",
+    "name": "Byukugan Dou",
+    "icon": "dou_byukugan.jpg",
+    "description": "Tăng thêm các chỉ số tấn công và phòng thủ về Dou",
+    "effects": {
+      "technique.dou": 10,
+      "defense.dou": 10
+    }
+  },
+  {
+    "id": "kote_dem_day",
+    "name": "Kote Senpo",
+    "icon": "kote_dem_day.jpg",
+    "description": "Tăng thêm chỉ số công và thủ về Kote.",
+    "effects": {
+      "defense.kote": 10,
+      "technique.kote": 10
+    }
+  },
+  {
+    "id": "tare_de_giay",
+    "name": "Senpo Tare",
+    "icon": "senpo_tare.jpg",
+    "description": "Tăng chỉ số phòng thủ chung và phòng thủ Tsuki",
+    "effects": {
+      "defend_rate": 10,
+      "defense.tsuki": 15
+    }
+  },
+  {
+    "id": "shinai_nhe_tay",
+    "name": "Shinai",
+    "icon": "shinai.jpg",
+    "description": "Tăng chỉ số tấn công và đòn Tsuki.",
+    "effects": {
+      "attack_rate": 15,
+      "technique.tsuki": 10
+    }
+  },
+  {
+    "id": "pocari",
+    "name": "Pocari",
+    "icon": "pocari.jpg",
+    "description": "Tăng chỉ số thể lực.",
+    "effects": {
+      "stamina": 15
+    }
+  },
+  {
+    "id": "day_thang",
+    "name": "Dây thang tập chân",
+    "icon": "day_thang.jpg",
+    "description": "Tăng chỉ số tấn công và phòng thủ.",
+    "effects": {
+      "attack_rate": 10,
+      "defend_rate": 10
+    }
+  },
+  {
+    "id": "dummy",
+    "name": "Dummy tập kiếm",
+    "icon": "dummy.jpg",
+    "description": "Tăng tất cả chỉ số kĩ thuật đòn.",
+    "effects": {
+      "technique.men": 5,
+      "technique.kote": 5,
+      "technique.dou": 5,
+      "technique.tsuki": 5
+    }
+  }
+]

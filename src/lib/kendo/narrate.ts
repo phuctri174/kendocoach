@@ -16,21 +16,21 @@ import type {
  * never decides anything; all outcomes are already fixed by the simulator.
  *
  * Copy is Vietnamese and deliberately terse: roughly one clause per line.
- * Kendo vocabulary (Men, Kote, Đô, Tsuki, ippon, hansoku, hikiwake, daihyosen,
+ * Kendo vocabulary (Men, Kote, Dou, Tsuki, ippon, hansoku, hikiwake, daihyosen,
  * the stance and position names) stays untranslated.
  */
 
 const STRIKE_VERBS: Record<Target, string[]> = {
-  men: ["bổ Men xuyên thế thủ", "dấn lên, ăn Men", "phá trung tuyến, Men"],
-  kote: ["lao vào ăn Kote", "chớp thời cơ, Kote", "gõ trúng cổ tay, Kote"],
-  dou: ["luồn người chém Đô", "bước chéo, ăn Đô", "xoay người, Đô sạch"],
+  men: ["bổ Men váng đầu", "dấn lên, vẩy Men", "phá trung tuyến, Men"],
+  kote: ["lao vào đánh Kote", "chớp thời cơ, Kote", "gõ trúng cổ tay, Kote"],
+  dou: ["luồn người chém Dou", "bước chéo, đánh Dou", "xoay người, Dou sạch"],
   tsuki: ["phóng Tsuki vào trung tuyến", "xuyên tới bằng Tsuki", "tìm yết hầu, Tsuki"],
 };
 
 const COUNTER_VERBS: Record<Target, string[]> = {
   men: ["đáp Men ở nhịp trả", "ăn Men trên đường lui"],
   kote: ["trừng phạt bằng debana-Kote", "đón đúng nhịp, Kote"],
-  dou: ["ăn nuki-Đô", "né rồi xẻ Đô"],
+  dou: ["ăn nuki-Dou", "né rồi xẻ Dou"],
   tsuki: ["phản đòn Tsuki", "chộp sơ hở, Tsuki"],
 };
 

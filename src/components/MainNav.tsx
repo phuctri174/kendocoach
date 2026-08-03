@@ -7,7 +7,7 @@ import { AuthNavItem } from "@/components/versus/AuthNavItem";
 const LINKS = [
   { href: "/", label: "Đấu đối kháng" },
   { href: "/dau-don", label: "Đấu đơn" },
-  { href: "/chi-so", label: "Chỉ số Kendoka" },
+  { href: "/chi-so", label: "Bảng Xếp Hạng Sức Mạnh" },
 ];
 
 /** Top-level menu. The tournament itself lives at "/". */
@@ -23,11 +23,10 @@ export function MainNav() {
             key={link.href}
             href={link.href}
             aria-current={active ? "page" : undefined}
-            className={`hex-tab display px-2.5 py-1.5 text-[10px] transition-colors sm:px-4 sm:py-2 sm:text-[11px] ${
-              active
+            className={`hex-tab display px-2.5 py-1.5 text-[10px] transition-colors sm:px-4 sm:py-2 sm:text-[11px] ${active
                 ? "bg-brass-400 text-forest-900"
                 : "bg-forest-700 text-paper hover:bg-forest-600 hover:text-brass-200"
-            }`}
+              }`}
           >
             {link.label}
           </Link>

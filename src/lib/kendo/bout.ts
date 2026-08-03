@@ -24,6 +24,7 @@ import {
   type Position,
   type Side,
   type StanceSwitch,
+  type StyleModifier,
   type Target,
 } from "./types";
 
@@ -56,7 +57,32 @@ export interface SimulateBoutOptions {
   seed?: string | number;
   rng?: Rng;
   config?: Partial<SimConfig>;
+  /**
+   * Optional per-exchange live overlay, evaluated fresh before each exchange
+   * with that exchange's *incoming* score (i.e. not yet reflecting this
+   * exchange's own outcome). Returns a transient delta layered on top of the
+   * current stance-based stats for that exchange only — never baked into
+   * `statsA`/`statsB` themselves, so it neither persists past the exchange it
+   * was returned for nor survives a stance switch on its own; a caller that
+   * wants a "sticky" buff (e.g. active for the rest of the bout once a
+   * condition is met) re-derives that from its own closure state each call.
+   * Absent by default, and every existing call site leaves it unset — the
+   * one `if` check this adds per exchange is the only cost, and it's a
+   * no-op read of `effStatsA === statsA` when unset, so solo-mode bout
+   * resolution is untouched byte-for-byte.
+   */
+  dynamicModifier?: LiveModifierHook;
 }
+
+export interface LiveModifierState {
+  exchangeIndex: number;
+  ipponsA: number;
+  ipponsB: number;
+}
+
+export type LiveModifierHook = (
+  state: LiveModifierState,
+) => { a?: StyleModifier; b?: StyleModifier } | void;
 
 const clamp = (v: number, min: number, max: number) =>
   Math.min(max, Math.max(min, v));
@@ -252,20 +278,31 @@ export function simulateBout(
 
   for (let i = 0; i < total; i++) {
 
+    // Live overlay for this exchange only — see SimulateBoutOptions. Falls
+    // straight through to the stance-baseline stats when no hook is set, so
+    // this is a no-op for every solo-mode call.
+    let effStatsA = statsA;
+    let effStatsB = statsB;
+    if (options.dynamicModifier) {
+      const live = options.dynamicModifier({ exchangeIndex: i, ipponsA, ipponsB });
+      if (live?.a) effStatsA = applyStyleModifier(statsA, live.a);
+      if (live?.b) effStatsB = applyStyleModifier(statsB, live.b);
+    }
+
     const initiator: Side = rng.weighted(
       ["A", "B"] as const,
       [
-        Math.max(1, statsA.attack_rate) ** cfg.initiativeExponent *
+        Math.max(1, effStatsA.attack_rate) ** cfg.initiativeExponent *
           (1 - fatA) *
           STYLE_INITIATIVE_MOD[stanceA],
-        Math.max(1, statsB.attack_rate) ** cfg.initiativeExponent *
+        Math.max(1, effStatsB.attack_rate) ** cfg.initiativeExponent *
           (1 - fatB) *
           STYLE_INITIATIVE_MOD[stanceB],
       ],
     );
 
-    const attacker = initiator === "A" ? statsA : statsB;
-    const defender = initiator === "A" ? statsB : statsA;
+    const attacker = initiator === "A" ? effStatsA : effStatsB;
+    const defender = initiator === "A" ? effStatsB : effStatsA;
     const attackerStance = initiator === "A" ? stanceA : stanceB;
     const defenderStance = initiator === "A" ? stanceB : stanceA;
     const fatAtk = initiator === "A" ? fatA : fatB;

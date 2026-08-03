@@ -1,0 +1,609 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { HexPanel } from "@/components/Hex";
+import { CLUB_ROSTER } from "@/data/club";
+import { ITEM_CATALOG } from "@/data/items";
+import {
+  HANSOKU_GLYPH,
+  TARGET_LETTER,
+  type Bout,
+  type CombatStyle,
+  type MatchLogEvent,
+  type Player,
+  type Side,
+  type StatPath,
+} from "@/lib/kendo";
+import type { ItemEquip } from "@/lib/versus/draft";
+import { EquipIcon, type EquipDisplay } from "@/components/versus/EquipBadge";
+import { PlayerHoverCard } from "@/components/versus/PlayerHoverCard";
+import { useTapReveal } from "@/components/versus/useTapReveal";
+import { formatEffectDelta, statEffectLabel } from "@/lib/versus/statLabels";
+
+const ITEM_BY_ID = new Map(ITEM_CATALOG.map((i) => [i.id, i]));
+
+const NAME_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p.name]));
+
+/** How long between narrative beats while the log is playing, in ms. */
+const BEAT_MS = 700;
+
+const STANCE_COLOR: Record<CombatStyle, string> = {
+  Jodan: "text-blood",
+  Nito: "text-steel-500",
+  Chudan: "text-brass-600",
+};
+
+interface Mark {
+  glyph: string;
+  kind: "ippon" | "hansoku";
+}
+
+function marksFor(bout: Bout, side: Side, throughExchange: number): Mark[] {
+  const marks: Mark[] = [];
+  for (const exchange of bout.exchanges) {
+    if (exchange.index > throughExchange) break;
+    const defender: Side = exchange.initiator === "A" ? "B" : "A";
+
+    if (exchange.outcome === "ippon" && exchange.initiator === side) {
+      marks.push({ glyph: TARGET_LETTER[exchange.target], kind: "ippon" });
+    }
+    if (exchange.outcome === "counter" && defender === side && exchange.counterTarget) {
+      marks.push({ glyph: TARGET_LETTER[exchange.counterTarget], kind: "ippon" });
+    }
+    if (exchange.hansoku === side) {
+      marks.push({ glyph: HANSOKU_GLYPH, kind: "hansoku" });
+    }
+  }
+  return marks;
+}
+
+/**
+ * Adapted from src/components/tournament/MatchViewer.tsx for versus mode —
+ * duplicated rather than sharing, since that component is wired to
+ * `RoundOutcome` (solo-mode's AI-opponent framing: coachRepresentative,
+ * counterPickEdge, etc.) and touching it risks the working solo-mode screen.
+ * Same beat-by-beat narration playback, driven off the same `TeamMatch.log`
+ * the unmodified engine already produces — nothing here re-simulates
+ * anything, it only replays what the server already computed.
+ */
+/** Structurally compatible with both a final `TeamMatch` and the
+ *  5-bouts-only `BoutProvisional` shown while a daihyosen rep is pending. */
+interface DisplayMatch {
+  bouts: Bout[];
+  tiebreak?: Bout;
+  log: MatchLogEvent[];
+}
+
+export function BoutResultBoard({
+  match,
+  teamAName,
+  teamBName,
+  augmentBadgesA,
+  augmentBadgesB,
+  itemEquipsA,
+  itemEquipsB,
+  basePlayerById,
+  bonusByPlayer,
+  seriesDecided,
+  onContinue,
+  daihyosenPending,
+}: {
+  match: DisplayMatch;
+  teamAName: string;
+  teamBName: string;
+  /** Every currently-qualifying stacked augment for each side — team-wide,
+   *  so the same list shows under all 5 of that side's players. */
+  augmentBadgesA: EquipDisplay[];
+  augmentBadgesB: EquipDisplay[];
+  /** This game's locked-in equip choices, one entry per equipped player. */
+  itemEquipsA: ItemEquip[];
+  itemEquipsB: ItemEquip[];
+  /** Raw (pre-bonus) stats and each player's total resolved bonus this
+   *  game, keyed by player id — the hover breakdown's "OG stats + bonuses". */
+  basePlayerById: Record<string, Player>;
+  bonusByPlayer: Record<string, Partial<Record<StatPath, number>>>;
+  seriesDecided: boolean;
+  onContinue: () => void;
+  /** Present only while the 5 regular bouts came back tied and at least one
+   *  side hasn't yet picked who represents them in the decider. */
+  daihyosenPending?: {
+    myRoster: string[];
+    myRepresentative: string | null;
+    opponentRepresentative: string | null;
+    onPickRepresentative: (id: string) => void;
+    busy: boolean;
+  };
+}) {
+  const log = match.log;
+  const [shown, setShown] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!playing || shown >= log.length) return;
+    const timer = setTimeout(() => setShown((n) => n + 1), BEAT_MS);
+    return () => clearTimeout(timer);
+  }, [playing, shown, log.length]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [shown]);
+
+  const finished = shown >= log.length;
+  const visible = useMemo(() => log.slice(0, shown), [log, shown]);
+
+  const progress = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const event of visible) {
+      if (!event.boutId) continue;
+      const at = event.exchangeIndex ?? -1;
+      map.set(event.boutId, Math.max(map.get(event.boutId) ?? -1, at));
+    }
+    return map;
+  }, [visible]);
+
+  const resolved = useMemo(() => {
+    const set = new Set<string>();
+    for (const event of visible) {
+      if (event.kind === "bout-result" && event.boutId) set.add(event.boutId);
+    }
+    return set;
+  }, [visible]);
+
+  const all: Bout[] = match.tiebreak ? [...match.bouts, match.tiebreak] : match.bouts;
+
+  const latestScore = visible.length ? (visible[visible.length - 1].score ?? { a: 0, b: 0 }) : { a: 0, b: 0 };
+
+  return (
+    <section className="flex flex-col gap-2 sm:gap-6">
+      <MatchSummary
+        teamAName={teamAName}
+        teamBName={teamBName}
+        bouts={all}
+        progress={progress}
+        showAll={finished}
+        latestScore={latestScore}
+        augmentsA={augmentBadgesA}
+        augmentsB={augmentBadgesB}
+      />
+
+      <div className="grid gap-2 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
+        <Scoreboard
+          bouts={all}
+          progress={progress}
+          resolved={resolved}
+          showAll={finished}
+          itemEquipsA={itemEquipsA}
+          itemEquipsB={itemEquipsB}
+          basePlayerById={basePlayerById}
+          bonusByPlayer={bonusByPlayer}
+        />
+
+        <div className="flex flex-col gap-1.5 sm:gap-3">
+          <HexPanel cut={18}>
+            <div
+              className="flex h-[10dvh] min-h-[64px] flex-col gap-1 overflow-y-auto px-3 py-1.5 sm:h-[420px] sm:min-h-0 sm:px-5 sm:py-5"
+              aria-live="polite"
+            >
+              {visible.map((event) => (
+                <LogLine key={event.id} event={event} />
+              ))}
+              <div ref={endRef} />
+            </div>
+          </HexPanel>
+
+          <div className="flex flex-col items-center gap-2 sm:gap-3">
+            {finished ? (
+              daihyosenPending ? (
+                <DaihyosenPicker {...daihyosenPending} />
+              ) : seriesDecided ? (
+                <p className="display text-sm text-brass-600">Trận đấu đã kết thúc!</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onContinue}
+                  className="hex-tab bg-brass-400 px-8 py-2 text-forest-900 transition-colors hover:bg-brass-300 sm:py-3"
+                >
+                  <span className="display text-sm">Tiếp tục</span>
+                </button>
+              )
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPlaying((p) => !p)}
+                  className="hex-tab bg-forest-700 px-6 py-2 text-brass-300 transition-colors hover:bg-forest-600 sm:py-3"
+                >
+                  <span className="display text-xs">{playing ? "Tạm dừng" : "Tiếp tục"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShown(log.length)}
+                  className="hex-tab bg-forest-700 px-6 py-2 text-paper transition-colors hover:bg-forest-600 sm:py-3"
+                >
+                  <span className="display text-xs">Bỏ qua</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DaihyosenPicker({
+  myRoster,
+  myRepresentative,
+  opponentRepresentative,
+  onPickRepresentative,
+  busy,
+}: {
+  myRoster: string[];
+  myRepresentative: string | null;
+  opponentRepresentative: string | null;
+  onPickRepresentative: (id: string) => void;
+  busy: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <p className="display text-sm text-brass-600">Hòa tuyệt đối! Cần đấu đại diện quyết định.</p>
+      {myRepresentative ? (
+        <p className="text-xs text-bone-faint">
+          Bạn đã chọn: {NAME_BY_ID.get(myRepresentative) ?? myRepresentative}
+          {opponentRepresentative ? "" : " — đang chờ đối thủ chọn…"}
+        </p>
+      ) : (
+        <>
+          <p className="text-xs text-bone-faint">Chọn đại diện danh dự của bạn:</p>
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+            {myRoster.map((playerId) => (
+              <button
+                key={playerId}
+                type="button"
+                onClick={() => onPickRepresentative(playerId)}
+                disabled={busy}
+                className="hex-tab bg-brass-400 px-3 py-1.5 text-xs text-forest-900 transition-colors hover:bg-brass-300 disabled:cursor-not-allowed disabled:bg-paper-dim disabled:text-bone-faint"
+              >
+                {NAME_BY_ID.get(playerId) ?? playerId}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function MatchSummary({
+  teamAName,
+  teamBName,
+  bouts,
+  progress,
+  showAll,
+  latestScore,
+  augmentsA,
+  augmentsB,
+}: {
+  teamAName: string;
+  teamBName: string;
+  bouts: Bout[];
+  progress: Map<string, number>;
+  showAll: boolean;
+  latestScore: { a: number; b: number };
+  /** Every currently-qualifying stacked augment for each side — team-wide,
+   *  shown once next to that side's name rather than repeated under all 5
+   *  of their players (see TeamAugmentBadge). */
+  augmentsA: EquipDisplay[];
+  augmentsB: EquipDisplay[];
+}) {
+  const ippons = useMemo(() => {
+    let a = 0;
+    let b = 0;
+    for (const bout of bouts) {
+      const through = showAll ? bout.exchanges.length - 1 : (progress.get(bout.id) ?? -1);
+      if (through < 0) continue;
+      const last = bout.exchanges[through];
+      a += last.scoreAfter.a;
+      b += last.scoreAfter.b;
+    }
+    return { a, b };
+  }, [bouts, progress, showAll]);
+
+  return (
+    <HexPanel cut={14}>
+      <div className="flex items-center justify-between gap-3 px-4 py-1.5 sm:px-6 sm:py-3">
+        <TeamTally name={teamAName} wins={latestScore.a} ippons={ippons.a} align="left" augments={augmentsA} />
+        <span className="display shrink-0 text-xs text-brass-600 sm:text-sm">—</span>
+        <TeamTally name={teamBName} wins={latestScore.b} ippons={ippons.b} align="right" augments={augmentsB} />
+      </div>
+    </HexPanel>
+  );
+}
+
+function TeamTally({
+  name,
+  wins,
+  ippons,
+  align,
+  augments,
+}: {
+  name: string;
+  wins: number;
+  ippons: number;
+  align: "left" | "right";
+  augments: EquipDisplay[];
+}) {
+  return (
+    <div className={`flex min-w-0 flex-col gap-0.5 ${align === "right" ? "items-end text-right" : "items-start text-left"}`}>
+      <div className={`flex min-w-0 items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
+        <span className="min-w-0 truncate text-sm text-bone sm:text-base">{name}</span>
+        <TeamAugmentBadge augments={augments} />
+      </div>
+      <span className="display text-lg text-brass-600 sm:text-xl">{wins}</span>
+      <span className="text-[10px] text-bone-faint sm:text-[11px]">{ippons} ippon</span>
+    </div>
+  );
+}
+
+/**
+ * One small clickable badge per side, next to the team name, standing in for
+ * every currently-qualifying stacked augment that side has active this game
+ * — team-wide, so it belongs beside the name once, not repeated under all 5
+ * position boxes below. The badge's own label is the augment's name (the
+ * reveal moment is right here, once the match viewer starts — see
+ * AugmentBoard/ItemBoard, which keep the opponent's pick unnamed through the
+ * rest of the pre-match flow); tap/click (mobile-primary) or hover opens the
+ * full description + effects, same interaction as EquipBadge/EquipIcon and
+ * PlayerHoverCard elsewhere on this screen. The same augment can be picked
+ * more than once across the series (it stacks each time — see sumEffects in
+ * versus/bout.ts), so repeats are grouped into one "×N" entry instead of
+ * being listed twice.
+ */
+function TeamAugmentBadge({ augments }: { augments: EquipDisplay[] }) {
+  const { visible, pos, triggerRef, triggerProps } = useTapReveal<HTMLButtonElement>();
+
+  const grouped = useMemo(() => {
+    const byName = new Map<string, { augment: EquipDisplay; count: number }>();
+    for (const a of augments) {
+      const existing = byName.get(a.name);
+      if (existing) existing.count += 1;
+      else byName.set(a.name, { augment: a, count: 1 });
+    }
+    return Array.from(byName.values());
+  }, [augments]);
+
+  if (grouped.length === 0) return null;
+
+  const label = grouped.map(({ augment, count }) => (count > 1 ? `${augment.name} ×${count}` : augment.name)).join(", ");
+
+  return (
+    <>
+      <button
+        type="button"
+        ref={triggerRef}
+        {...triggerProps}
+        className="max-w-[5rem] shrink truncate rounded bg-forest-700/60 px-1 py-0.5 text-[9px] text-brass-300 sm:max-w-[8rem] sm:text-[10px]"
+      >
+        {label}
+      </button>
+      {visible &&
+        pos &&
+        createPortal(
+          <div
+            className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 flex-col gap-1.5 bg-card px-3 py-2 text-left shadow-lg"
+            style={{ top: pos.top, left: pos.left }}
+          >
+            {grouped.map(({ augment, count }, idx) => (
+              <div key={idx} className={idx > 0 ? "mt-1.5 border-t border-brass-600/20 pt-1.5" : ""}>
+                <p className="display text-xs text-brass-300">
+                  {augment.name}
+                  {count > 1 ? ` ×${count}` : ""}
+                </p>
+                <p className="text-[11px] text-bone-faint">{augment.description}</p>
+                {Object.keys(augment.effects).length > 0 && (
+                  <ul className="mt-0.5 flex flex-col gap-0.5">
+                    {Object.entries(augment.effects).map(([path, delta]) => (
+                      <li key={path} className="text-[11px] tabular-nums text-bone">
+                        {formatEffectDelta(delta)} {statEffectLabel(path)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
+
+function Scoreboard({
+  bouts,
+  progress,
+  resolved,
+  showAll,
+  itemEquipsA,
+  itemEquipsB,
+  basePlayerById,
+  bonusByPlayer,
+}: {
+  bouts: Bout[];
+  progress: Map<string, number>;
+  resolved: Set<string>;
+  showAll: boolean;
+  itemEquipsA: ItemEquip[];
+  itemEquipsB: ItemEquip[];
+  basePlayerById: Record<string, Player>;
+  bonusByPlayer: Record<string, Partial<Record<StatPath, number>>>;
+}) {
+  return (
+    <ol className="flex flex-col gap-1 sm:gap-2">
+      {bouts.map((bout, row) => {
+        const through = showAll ? bout.exchanges.length : (progress.get(bout.id) ?? -1);
+        const started = through >= 0;
+        const winner = bout.result.winner;
+        const decided = showAll || resolved.has(bout.id);
+
+        return (
+          <li key={bout.id} className="flex items-stretch gap-1 sm:gap-2">
+            <SideBlock
+              index={row + 1}
+              bout={bout}
+              side="A"
+              through={through}
+              started={started}
+              highlight={decided && winner === "A"}
+              itemEquips={itemEquipsA}
+              basePlayerById={basePlayerById}
+              bonusByPlayer={bonusByPlayer}
+            />
+            <div className="flex w-9 shrink-0 flex-col items-center justify-center sm:w-12">
+              <span className="display text-[10px] text-brass-600 sm:text-[11px]">{bout.daihyosen ? "DH" : "VS"}</span>
+              <span className="text-[9px] leading-tight text-bone-faint sm:text-[10px]">
+                {bout.daihyosen ? "" : bout.position}
+              </span>
+            </div>
+            <SideBlock
+              index={row + 6}
+              bout={bout}
+              side="B"
+              through={through}
+              started={started}
+              highlight={decided && winner === "B"}
+              mirrored
+              itemEquips={itemEquipsB}
+              basePlayerById={basePlayerById}
+              bonusByPlayer={bonusByPlayer}
+            />
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function SideBlock({
+  index,
+  bout,
+  side,
+  through,
+  started,
+  highlight,
+  mirrored = false,
+  itemEquips,
+  basePlayerById,
+  bonusByPlayer,
+}: {
+  index: number;
+  bout: Bout;
+  side: Side;
+  through: number;
+  started: boolean;
+  highlight: boolean;
+  mirrored?: boolean;
+  itemEquips: ItemEquip[];
+  basePlayerById: Record<string, Player>;
+  bonusByPlayer: Record<string, Partial<Record<StatPath, number>>>;
+}) {
+  const player = side === "A" ? bout.playerA : bout.playerB;
+  const marks = started ? marksFor(bout, side, through) : [];
+  const equippedItem = itemEquips.find((eq) => eq.targetPlayerId === player.id);
+  const itemBadge = equippedItem ? ITEM_BY_ID.get(equippedItem.itemId) : undefined;
+  const badges: EquipDisplay[] = itemBadge
+    ? [{ name: itemBadge.name, description: itemBadge.description, effects: itemBadge.effects, icon: itemBadge.icon }]
+    : [];
+  const base = basePlayerById[player.id];
+
+  return (
+    <HexPanel
+      className="min-w-0 flex-1"
+      cut={12}
+      frameClassName={highlight ? "bg-brass-400/80" : "bg-forest-700/30"}
+      bodyClassName={started ? "bg-card" : "bg-paper-dim"}
+    >
+      <div
+        className={`flex h-full min-w-0 flex-col gap-0.5 px-2 py-0.5 sm:gap-1 sm:px-3 sm:py-2 ${
+          mirrored ? "items-end text-right" : "items-start text-left"
+        }`}
+      >
+        <div className={`flex w-full min-w-0 items-baseline gap-1.5 sm:gap-2 ${mirrored ? "flex-row-reverse" : ""}`}>
+          <span className="display shrink-0 text-[10px] text-brass-600 sm:text-[11px]">{index}</span>
+          {base ? (
+            <PlayerHoverCard
+              className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm"
+              name={player.name}
+              base={base}
+              bonus={bonusByPlayer[player.id] ?? {}}
+            />
+          ) : (
+            <span className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm">{player.name}</span>
+          )}
+        </div>
+        <div className={`flex min-h-4 flex-wrap items-center gap-1 sm:min-h-6 ${mirrored ? "justify-end" : ""}`}>
+          {badges.map((b, idx) => (
+            <EquipIcon key={idx} equip={b} />
+          ))}
+          {marks.length === 0 ? (
+            <span className="text-[10px] text-bone-faint sm:text-[11px]">{started ? "—" : "chưa đấu"}</span>
+          ) : (
+            marks.map((mark, i) => (
+              <span
+                key={i}
+                className={`display flex h-4 w-4 items-center justify-center text-[10px] sm:h-5 sm:w-5 sm:text-[11px] ${
+                  mark.kind === "hansoku" ? "bg-blood/80 text-paper" : "bg-brass-400 text-forest-900"
+                }`}
+                title={mark.kind === "hansoku" ? "Hansoku" : "Ippon"}
+              >
+                {mark.glyph}
+              </span>
+            ))
+          )}
+        </div>
+      </div>
+    </HexPanel>
+  );
+}
+
+function LogLine({ event }: { event: MatchLogEvent }) {
+  if (event.kind === "banner") {
+    const tone =
+      event.side === "A" ? "bg-brass-400 text-forest-900" : event.side === "B" ? "bg-blood text-paper" : "bg-forest-600 text-paper";
+    return <p className={`hex-tab display mt-3 px-4 py-2 text-center text-base ${tone}`}>{event.text}</p>;
+  }
+
+  if (event.kind === "match-header") {
+    return <p className="display border-b border-brass-600/30 pb-2 text-sm text-brass-600">{event.text}</p>;
+  }
+
+  if (event.kind === "bout-start") {
+    return <p className="display mt-3 text-sm text-brass-600">{event.text}</p>;
+  }
+
+  if (event.kind === "stance" && event.stance) {
+    const word = event.stance.toUpperCase();
+    const [before] = event.text.split(word);
+    return (
+      <p className="pl-3 text-sm leading-relaxed text-bone-dim">
+        <span className="text-brass-600">— </span>
+        {before}
+        <span className={`display font-bold ${STANCE_COLOR[event.stance]}`}>{word}</span>
+      </p>
+    );
+  }
+
+  if (event.kind === "bout-result") {
+    const tone = event.side === "A" ? "text-brass-600" : event.side === "B" ? "text-blood" : "text-bone-dim";
+    return <p className={`mt-1 mb-1 pl-3 text-sm font-semibold ${tone}`}>{event.text}</p>;
+  }
+
+  const tone = event.side === "A" ? "text-bone" : event.side === "B" ? "text-bone-dim" : "text-bone-faint";
+  return (
+    <p className={`pl-3 text-sm leading-relaxed ${tone}`}>
+      <span className="text-brass-600">— </span>
+      {event.text}
+    </p>
+  );
+}

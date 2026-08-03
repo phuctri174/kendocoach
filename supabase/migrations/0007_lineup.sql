@@ -1,0 +1,12 @@
+-- Phase 7: position assignment, after the draft (and after augments/items on
+-- the relevant games).
+--
+-- match_games.lineup_a / lineup_b already existed as stubs from the Phase 1
+-- schema — plain `jsonb`, nullable with no default, so unlike augment_picks
+-- / item_picks these genuinely read back as SQL null (not '{}'::jsonb) until
+-- written. No private staging table needed here: the arranging itself never
+-- touches the server at all — a side's in-progress drag-and-drop lives only
+-- in that browser's local state, and the single write on "Confirm lineup"
+-- goes straight to the public column, same reveal-on-individual-confirm
+-- timing as augment_picks / item_picks.
+alter table public.match_games add column lineup_seq integer not null default 0;

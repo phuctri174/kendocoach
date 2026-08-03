@@ -116,7 +116,7 @@ export function MatchViewer({
     : { a: 0, b: 0 };
 
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-4 sm:gap-6">
       <header className="flex flex-col items-center gap-1 text-center">
         <p className="display text-xs text-brass-600">{outcome.round.label}</p>
         <h2 className="display text-lg text-bone sm:text-2xl">
@@ -134,14 +134,17 @@ export function MatchViewer({
         latestScore={latestScore}
       />
 
-      {/* Below lg the two panes stack: scoreboard first, then the log. */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
+      {/* Below lg the two panes stack: scoreboard first, then the log. The
+          log's own height is viewport-relative on mobile (not a flat px
+          number) so it scales down on short phones instead of pushing the
+          page past one screen — see the dvh unit below. */}
+      <div className="grid gap-3 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
         <Scoreboard bouts={all} progress={progress} resolved={resolved} showAll={finished} />
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:gap-3">
           <HexPanel cut={18}>
             <div
-              className="flex h-[236px] flex-col gap-1 overflow-y-auto px-3 py-3 sm:h-[420px] sm:px-5 sm:py-5"
+              className="flex h-[19dvh] min-h-[120px] flex-col gap-1 overflow-y-auto px-3 py-2 sm:h-[420px] sm:min-h-0 sm:px-5 sm:py-5"
               aria-live="polite"
             >
               {visible.map((event) => (
@@ -218,7 +221,7 @@ function MatchSummary({
 
   return (
     <HexPanel cut={14}>
-      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div className="flex items-center justify-between gap-3 px-4 py-2 sm:px-6 sm:py-3">
         <TeamTally name={outcome.match.teamA.name} wins={latestScore.a} ippons={ippons.a} align="left" />
         <span className="display shrink-0 text-xs text-brass-600 sm:text-sm">—</span>
         <TeamTally name={outcome.match.teamB.name} wins={latestScore.b} ippons={ippons.b} align="right" />
@@ -264,7 +267,7 @@ function Scoreboard({
   showAll: boolean;
 }) {
   return (
-    <ol className="flex flex-col gap-2">
+    <ol className="flex flex-col gap-1.5 sm:gap-2">
       {bouts.map((bout, row) => {
         const through = showAll
           ? bout.exchanges.length
@@ -335,7 +338,7 @@ function SideBlock({
       bodyClassName={started ? "bg-card" : "bg-paper-dim"}
     >
       <div
-        className={`flex h-full min-w-0 flex-col gap-0.5 px-2 py-1.5 sm:gap-1 sm:px-3 sm:py-2 ${
+        className={`flex h-full min-w-0 flex-col gap-0.5 px-2 py-1 sm:gap-1 sm:px-3 sm:py-2 ${
           mirrored ? "items-end text-right" : "items-start text-left"
         }`}
       >

@@ -1,0 +1,217 @@
+[
+  {
+    "id": "rookie_men",
+    "name": "Lớp Cơ Bản",
+    "tier": "Rookie",
+    "description": "Tăng khả năng ra đòn Men cho cả 5 thành viên trong đội.",
+    "effects": {
+      "technique.men": 10
+    }
+  },
+  {
+    "id": "rookie_technique",
+    "name": "Bài Tập Tenouchi",
+    "tier": "Rookie",
+    "description": "Tăng khả năng ra đòn trúng cho cả 5 thành viên trong đội.",
+    "effects": {
+      "technique.kote": 3,
+      "technique.men": 3,
+      "technique.dou": 3,
+      "technique.tsuki": 3
+    }
+  },
+  {
+    "id": "rookie_37do",
+    "name": "37 Độ C",
+    "tier": "Rookie",
+    "description": "Tăng tỉ lệ phòng thủ và Thể Lực cho cả 5 thành viên trong đội khi có Nhi Nhi trong đội.",
+    "effects": {
+      "stamina": 10,
+      "defend_rate": 15
+    }
+  },
+  {
+    "id": "rookie_stamina",
+    "name": "Bật Cao Chém Men",
+    "tier": "Rookie",
+    "description": "Tăng khả năng ra đòn Men và Thể Lực cho cả 5 thành viên trong đội.",
+    "effects": {
+      "technique.men": 5,
+      "stamina": 10
+    }
+  },
+  {
+    "id": "rookie_dou_men",
+    "name": "Dou kết hợp Sayu Men",
+    "tier": "Rookie",
+    "description": "Tăng tỉ lệ ra đòn Dou và Men cho cả 5 thành viên trong đội.",
+    "effects": {
+      "technique.dou": 7,
+      "technique.men": 5
+    }
+  },
+  {
+    "id": "rookie_experience",
+    "name": "Team Trải Nghiệm",
+    "tier": "Rookie",
+    "description": "Giảm tỉ lệ phạm luật (hansoku) và tăng tỉ lệ tấn công cho cả 5 thành viên trong đội.",
+    "effects": {
+      "attack_rate": 5,
+      "hansoku_rate": -5
+    }
+  },
+  {
+    "id": "rookie_aggressive",
+    "name": "Team Đọ Tay",
+    "tier": "Rookie",
+    "description": "Tăng tỉ lệ phạm luật (hansoku) nhưng đồng thời tăng tỉ lệ tấn công cho cả 5 thành viên trong đội.",
+    "effects": {
+      "hansoku_rate": 10,
+      "attack_rate": 15
+    }
+  },
+  {
+    "id": "kyu_bogu",
+    "name": "Lớp Bogu",
+    "tier": "Kyu",
+    "description": "Tăng các chỉ số tấn công và phòng thủ cho cả 5 thành viên trong đội.",
+    "effects": {
+      "attack_rate": 15,
+      "defend_rate": 15
+    }
+  },
+  {
+    "id": "kyu_kote",
+    "name": "2nd Dojo",
+    "tier": "Kyu",
+    "description": "Tăng Thể Lực nhưng đồng thời tăng tỉ lệ phạm luật (hansoku) cho cả 5 thành viên trong đội.",
+    "effects": {
+      "stamina": 20,
+      "hansoku_rate": 7
+    }
+  },
+  {
+    "id": "kyu_haya",
+    "name": "Haya Suburi",
+    "tier": "Kyu",
+    "description": "Tăng Thể Lực và tỉ lệ ra đòn Men cho cả 5 thành viên trong đội.",
+    "effects": {
+      "stamina": 12,
+      "technique.men": 10
+    }
+  },
+  {
+    "id": "kyu_push",
+    "name": "LAO LÊN!!!",
+    "tier": "Kyu",
+    "description": "Tăng tỉ lệ tấn công và giảm tỉ lệ phạm luật (hansoku) cho cả 5 thành viên ngẫu nhiên trong đội.",
+    "effects": {
+      "attack_rate": 20,
+      "hansoku_rate": -10
+    }
+  },
+  {
+    "id": "kyu_trashtalk",
+    "name": "Tám Chuyện",
+    "tier": "Kyu",
+    "description": "Tăng tỉ lệ tấn công cho cả 5 thành viên trong đội đồng thời giảm tỉ lệ phòng thủ của 5 thành viên đối phương.",
+    "effects": {
+      "attack_rate": 15,
+      "opp.defend_rate": -10
+    }
+  },
+  {
+    "id": "kyu_capulus",
+    "name": "Capulus Coffee",
+    "tier": "Kyu",
+    "description": "Giảm tỉ lệ phạm luật (hansoku) và tăng tỉ lệ phòng thủ các kĩ thuật cho cả 5 thành viên trong đội khi có Võ Nguyệt Đức trong đội.",
+    "effects": {
+      "hansoku_rate": -15,
+      "defense.men": 10,
+      "defense.kote": 10,
+      "defense.dou": 10,
+      "defense.tsuki": 10
+    }
+  },
+  {
+    "id": "dan_pressing",
+    "name": "Căng Tay!",
+    "tier": "Dan",
+    "description": "Tăng tỉ lệ tấn công và tỉ lệ các kĩ thuật cho cả 5 thành viên trong đội.",
+    "effects": {
+      "technique.men": 10,
+      "technique.kote": 10,
+      "technique.dou": 10,
+      "technique.tsuki": 10,
+      "attack_rate": 20
+    }
+  },
+  {
+    "id": "dan_kote",
+    "name": "Lá Thì Thầm",
+    "tier": "Dan",
+    "description": "Tăng Thể Lực, giảm tỉ lệ phạm luật (hansoku) cho 5 thành viên trong đội và giảm tỉ lệ tấn công của 5 thành viên đối phương khi có Nguyễn Thị Nhị Phương trong đội.",
+    "effects": {
+      "stamina": 25,
+      "hansoku_rate": -15,
+      "opp.attack_rate": -20
+    }
+  },
+  {
+    "id": "dan_dou_guard",
+    "name": "Mâm Dưới",
+    "tier": "Dan",
+    "description": "Tăng các chỉ số kĩ thuật nếu tất cả các chỉ số kĩ thuật đều thấp hơn đối phương.",
+    "effects": {
+      "technique.men": 20,
+      "technique.kote": 20,
+      "technique.dou": 20,
+      "technique.tsuki": 20
+    }
+  },
+  {
+    "id": "dan_ami",
+    "name": "Ami HomeStay",
+    "tier": "Dan",
+    "description": "Tăng các chỉ số tấn công và phòng thủ cho cả 5 thành viên khi có Phan Anh Minh hoặc Nguyễn Kiều Hồng Nhung hoặc Phan Phúc Lâm trong đội hình.",
+    "effects": {
+      "attack_rate": 10,
+      "defend_rate": 10,
+      "technique.men": 10,
+      "technique.kote": 10,
+      "technique.dou": 10,
+      "technique.tsuki": 10,
+      "defense.men": 10,
+      "defense.dou": 10,
+      "defense.kote": 10,
+      "defense.tsuki": 10
+    }
+  },
+  {
+    "id": "dan_nice",
+    "name": "NAI XỪ !!!",
+    "tier": "Dan",
+    "description": "Tăng chỉ số tấn công, kĩ thuật và phòng thủ nếu vừa đạt được ippon.",
+    "effects": {
+      "attack_rate": 25,
+      "defend_rate": 25,
+      "technique.men": 20,
+      "technique.kote": 20,
+      "technique.dou": 20,
+      "technique.tsuki": 20
+    }
+  },
+  {
+    "id": "dan_fighting",
+    "name": "FAITOOO !!!",
+    "tier": "Dan",
+    "description": "Tăng các chỉ số tấn công và kĩ thuật cho cả 5 thành viên đội khi đang bị dẫn điểm tổng cả đội hoặc ippon.",
+    "effects": {
+      "attack_rate": 20,
+      "technique.men": 20,
+      "technique.kote": 20,
+      "technique.dou": 20,
+      "technique.tsuki": 20
+    }
+  }
+]

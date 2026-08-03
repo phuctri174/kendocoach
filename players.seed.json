@@ -38,7 +38,7 @@
         "tsuki": 5
       },
       "defense": {
-        "men": 80,
+        "men": 75,
         "kote": 70,
         "dou": 60,
         "tsuki": 50
@@ -113,7 +113,7 @@
         "men": 92,
         "kote": 85,
         "dou": 80,
-        "tsuki": 20
+        "tsuki": 25
       },
       "defense": {
         "men": 80,
@@ -158,7 +158,8 @@
   {
     "name": "Liên Toàn",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
@@ -179,15 +180,15 @@
       "stamina": 70
     },
     "styleModifiers": {
-        "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
     },
     "styleWeights": {
-         "Chudan": 0.4,
-    "Jodan": 0.6
+      "Chudan": 0.4,
+      "Jodan": 0.6
     }
   },
   {
@@ -219,36 +220,37 @@
   {
     "name": "Nguyễn Thị Nhị Phương",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
         "men": 72,
-        "kote": 60,
+        "kote": 65,
         "dou": 70,
         "tsuki": 5
       },
       "defense": {
         "men": 65,
         "kote": 65,
-        "dou": 60,
+        "dou": 65,
         "tsuki": 50
       },
-      "attack_rate": 60,
+      "attack_rate": 65,
       "defend_rate": 40,
       "hansoku_rate": 5,
-      "stamina": 60
+      "stamina": 65
     },
     "styleModifiers": {
-    "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
-  },
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
+    },
     "styleWeights": {
-        "Chudan": 0.4,
-    "Jodan": 0.6
+      "Chudan": 0.4,
+      "Jodan": 0.6
     }
   },
   {
@@ -258,7 +260,7 @@
     ],
     "baseStats": {
       "technique": {
-        "men": 80,
+        "men": 85,
         "kote": 70,
         "dou": 75,
         "tsuki": 5
@@ -269,10 +271,10 @@
         "dou": 65,
         "tsuki": 50
       },
-      "attack_rate": 80,
-      "defend_rate": 30,
+      "attack_rate": 70,
+      "defend_rate": 45,
       "hansoku_rate": 10,
-      "stamina": 70
+      "stamina": 75
     },
     "styleModifiers": {},
     "styleWeights": {}
@@ -280,7 +282,8 @@
   {
     "name": "Lê Minh Hiếu",
     "styles": [
-      "Chudan", "Nito"
+      "Chudan",
+      "Nito"
     ],
     "baseStats": {
       "technique": {
@@ -301,17 +304,17 @@
       "stamina": 80
     },
     "styleModifiers": {
-        "Nito": {
-      "defense.men": 7,
-      "defense.dou": 7,
-      "technique.kote": -7,
-      "technique.dou": -7,
-      "technique.tsuki": -7
-    }
+      "Nito": {
+        "defense.men": 7,
+        "defense.dou": 7,
+        "technique.kote": -7,
+        "technique.dou": -7,
+        "technique.tsuki": -7
+      }
     },
     "styleWeights": {
-        "Chudan": 0.2,
-    "Nito": 0.8
+      "Chudan": 0.2,
+      "Nito": 0.8
     }
   },
   {
@@ -473,7 +476,8 @@
   {
     "name": "Phạm Tô Minh Quốc",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
@@ -493,16 +497,16 @@
       "hansoku_rate": 13,
       "stamina": 63
     },
-     "styleModifiers": {
-    "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
-  },
+    "styleModifiers": {
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
+    },
     "styleWeights": {
-        "Chudan": 0.2,
-    "Jodan": 0.8
+      "Chudan": 0.2,
+      "Jodan": 0.8
     }
   },
   {
@@ -534,7 +538,8 @@
   {
     "name": "Ngô Tấn Phát",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
@@ -555,21 +560,22 @@
       "stamina": 65
     },
     "styleModifiers": {
-    "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
-  },
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
+    },
     "styleWeights": {
-        "Chudan": 0.5,
-    "Jodan": 0.5
+      "Chudan": 0.5,
+      "Jodan": 0.5
     }
   },
   {
     "name": "Nhi Nhi",
     "styles": [
-      "Chudan", "Nito"
+      "Chudan",
+      "Nito"
     ],
     "baseStats": {
       "technique": {
@@ -589,19 +595,19 @@
       "hansoku_rate": 10,
       "stamina": 55
     },
-     "styleModifiers": {
-    "Nito": {
-      "defense.men": 7,
-      "defense.dou": 7,
-      "technique.kote": -7,
-      "technique.dou": -7,
-      "technique.tsuki": -7
+    "styleModifiers": {
+      "Nito": {
+        "defense.men": 7,
+        "defense.dou": 7,
+        "technique.kote": -7,
+        "technique.dou": -7,
+        "technique.tsuki": -7
+      }
+    },
+    "styleWeights": {
+      "Chudan": 0.6,
+      "Nito": 0.4
     }
-  },
-  "styleWeights": {
-    "Chudan": 0.6,
-    "Nito": 0.4
-  }
   },
   {
     "name": "Hoàng Minh Châu",
@@ -647,7 +653,7 @@
         "dou": 60,
         "tsuki": 50
       },
-      "attack_rate": 20,
+      "attack_rate": 30,
       "defend_rate": 75,
       "hansoku_rate": 5,
       "stamina": 60
@@ -658,7 +664,8 @@
   {
     "name": "Nguyễn Văn Quý",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
@@ -679,15 +686,15 @@
       "stamina": 55
     },
     "styleModifiers": {
-        "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
     },
     "styleWeights": {
-        "Chudan": 0.5,
-    "Jodan": 0.5
+      "Chudan": 0.5,
+      "Jodan": 0.5
     }
   },
   {
@@ -723,7 +730,7 @@
     ],
     "baseStats": {
       "technique": {
-        "men": 82,
+        "men": 85,
         "kote": 80,
         "dou": 75,
         "tsuki": 5
@@ -763,7 +770,7 @@
       "attack_rate": 60,
       "defend_rate": 50,
       "hansoku_rate": 15,
-      "stamina": 68
+      "stamina": 70
     },
     "styleModifiers": {},
     "styleWeights": {}
@@ -983,7 +990,7 @@
     ],
     "baseStats": {
       "technique": {
-        "men": 55,
+        "men": 50,
         "kote": 50,
         "dou": 35,
         "tsuki": 5
@@ -994,8 +1001,8 @@
         "dou": 50,
         "tsuki": 50
       },
-      "attack_rate": 55,
-      "defend_rate": 40,
+      "attack_rate": 45,
+      "defend_rate": 35,
       "hansoku_rate": 15,
       "stamina": 50
     },
@@ -1005,7 +1012,8 @@
   {
     "name": "Võ Nguyệt Đức",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
@@ -1017,8 +1025,8 @@
       "defense": {
         "men": 70,
         "kote": 70,
-        "dou": 70,
-        "tsuki": 50
+        "dou": 65,
+        "tsuki": 40
       },
       "attack_rate": 65,
       "defend_rate": 45,
@@ -1026,15 +1034,15 @@
       "stamina": 65
     },
     "styleModifiers": {
-        "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
     },
     "styleWeights": {
-        "Chudan": 0.7,
-    "Jodan": 0.3
+      "Chudan": 0.7,
+      "Jodan": 0.3
     }
   },
   {
@@ -1089,11 +1097,11 @@
     "styleModifiers": {},
     "styleWeights": {}
   },
-  
   {
     "name": "Nguyễn Vũ Hoàng",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
@@ -1114,15 +1122,15 @@
       "stamina": 65
     },
     "styleModifiers": {
-        "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
     },
     "styleWeights": {
-        "Chudan": 0.5,
-    "Jodan": 0.5
+      "Chudan": 0.5,
+      "Jodan": 0.5
     }
   },
   {
@@ -1154,7 +1162,8 @@
   {
     "name": "Đoàn Đăng Khoa",
     "styles": [
-      "Chudan", "Jodan"
+      "Chudan",
+      "Jodan"
     ],
     "baseStats": {
       "technique": {
@@ -1175,15 +1184,15 @@
       "stamina": 75
     },
     "styleModifiers": {
-        "Jodan": {
-      "technique.men": 7,
-      "technique.kote": 7,
-      "defense.dou": -7
-    }
+      "Jodan": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defense.dou": -7
+      }
     },
     "styleWeights": {
-        "Chudan": 0.1,
-    "Jodan": 0.9
+      "Chudan": 0.1,
+      "Jodan": 0.9
     }
   }
 ]

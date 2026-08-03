@@ -165,11 +165,11 @@ export const COUNTER_TARGETS: Record<Target, Partial<Record<Target, number>>> = 
   tsuki: { men: 1.3, dou: 1.0, kote: 0.7 },
 };
 
-/** Vietnamese spelling used in the log — note "Đô" rather than "Dou". */
+/** Kendo vocabulary stays in its original romanized form, untranslated. */
 export const TARGET_LABEL: Record<Target, string> = {
   men: "Men",
   kote: "Kote",
-  dou: "Đô",
+  dou: "Dou",
   tsuki: "Tsuki",
 };
 
