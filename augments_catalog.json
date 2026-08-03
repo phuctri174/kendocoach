@@ -26,8 +26,8 @@
     "tier": "Rookie",
     "description": "Tăng tỉ lệ phòng thủ và Thể Lực cho cả 5 thành viên trong đội khi có Nhi Nhi trong đội.",
     "effects": {
-      "stamina": 10,
-      "defend_rate": 15
+      "stamina": 15,
+      "defend_rate": 20
     }
   },
   {
@@ -127,10 +127,10 @@
     "description": "Giảm tỉ lệ phạm luật (hansoku) và tăng tỉ lệ phòng thủ các kĩ thuật cho cả 5 thành viên trong đội khi có Võ Nguyệt Đức trong đội.",
     "effects": {
       "hansoku_rate": -15,
-      "defense.men": 10,
-      "defense.kote": 10,
-      "defense.dou": 10,
-      "defense.tsuki": 10
+      "defense.men": 15,
+      "defense.kote": 15,
+      "defense.dou": 15,
+      "defense.tsuki": 15
     }
   },
   {
@@ -152,8 +152,8 @@
     "tier": "Dan",
     "description": "Tăng Thể Lực, giảm tỉ lệ phạm luật (hansoku) cho 5 thành viên trong đội và giảm tỉ lệ tấn công của 5 thành viên đối phương khi có Nguyễn Thị Nhị Phương trong đội.",
     "effects": {
-      "stamina": 25,
-      "hansoku_rate": -15,
+      "stamina": 30,
+      "hansoku_rate": -20,
       "opp.attack_rate": -20
     }
   },
@@ -175,16 +175,16 @@
     "tier": "Dan",
     "description": "Tăng các chỉ số tấn công và phòng thủ cho cả 5 thành viên khi có Phan Anh Minh hoặc Nguyễn Kiều Hồng Nhung hoặc Phan Phúc Lâm trong đội hình.",
     "effects": {
-      "attack_rate": 10,
-      "defend_rate": 10,
-      "technique.men": 10,
-      "technique.kote": 10,
-      "technique.dou": 10,
-      "technique.tsuki": 10,
-      "defense.men": 10,
-      "defense.dou": 10,
-      "defense.kote": 10,
-      "defense.tsuki": 10
+      "attack_rate": 12,
+      "defend_rate": 12,
+      "technique.men": 12,
+      "technique.kote": 12,
+      "technique.dou": 12,
+      "technique.tsuki": 12,
+      "defense.men": 12,
+      "defense.dou": 12,
+      "defense.kote": 12,
+      "defense.tsuki": 12
     }
   },
   {

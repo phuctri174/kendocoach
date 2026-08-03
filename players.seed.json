@@ -9,7 +9,7 @@
         "men": 82,
         "kote": 82,
         "dou": 85,
-        "tsuki": 5
+        "tsuki": 15
       },
       "defense": {
         "men": 65,
@@ -19,7 +19,7 @@
       },
       "attack_rate": 65,
       "defend_rate": 65,
-      "hansoku_rate": 5,
+      "hansoku_rate": 30,
       "stamina": 60
     },
     "styleModifiers": {},
@@ -45,7 +45,7 @@
       },
       "attack_rate": 65,
       "defend_rate": 60,
-      "hansoku_rate": 5,
+      "hansoku_rate": 30,
       "stamina": 75
     },
     "styleModifiers": {},
@@ -71,7 +71,7 @@
       },
       "attack_rate": 70,
       "defend_rate": 55,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 80
     },
     "styleModifiers": {},
@@ -97,7 +97,7 @@
       },
       "attack_rate": 75,
       "defend_rate": 60,
-      "hansoku_rate": 8,
+      "hansoku_rate": 33,
       "stamina": 80
     },
     "styleModifiers": {},
@@ -123,7 +123,7 @@
       },
       "attack_rate": 70,
       "defend_rate": 60,
-      "hansoku_rate": 5,
+      "hansoku_rate": 30,
       "stamina": 85
     },
     "styleModifiers": {},
@@ -149,7 +149,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 65,
-      "hansoku_rate": 5,
+      "hansoku_rate": 30,
       "stamina": 60
     },
     "styleModifiers": {},
@@ -176,7 +176,7 @@
       },
       "attack_rate": 70,
       "defend_rate": 40,
-      "hansoku_rate": 10,
+      "hansoku_rate": 20,
       "stamina": 70
     },
     "styleModifiers": {
@@ -211,7 +211,7 @@
       },
       "attack_rate": 75,
       "defend_rate": 45,
-      "hansoku_rate": 5,
+      "hansoku_rate": 30,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -238,7 +238,7 @@
       },
       "attack_rate": 65,
       "defend_rate": 40,
-      "hansoku_rate": 5,
+      "hansoku_rate": 30,
       "stamina": 65
     },
     "styleModifiers": {
@@ -273,7 +273,7 @@
       },
       "attack_rate": 70,
       "defend_rate": 45,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 75
     },
     "styleModifiers": {},
@@ -300,7 +300,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 60,
-      "hansoku_rate": 20,
+      "hansoku_rate": 45,
       "stamina": 80
     },
     "styleModifiers": {
@@ -337,7 +337,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 65,
-      "hansoku_rate": 8,
+      "hansoku_rate": 33,
       "stamina": 50
     },
     "styleModifiers": {},
@@ -363,7 +363,7 @@
       },
       "attack_rate": 70,
       "defend_rate": 50,
-      "hansoku_rate": 10,
+      "hansoku_rate": 20,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -389,7 +389,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 50,
-      "hansoku_rate": 8,
+      "hansoku_rate": 33,
       "stamina": 60
     },
     "styleModifiers": {},
@@ -415,7 +415,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 50,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -441,7 +441,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 50,
-      "hansoku_rate": 15,
+      "hansoku_rate": 40,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -467,7 +467,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 48,
-      "hansoku_rate": 12,
+      "hansoku_rate": 37,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -494,7 +494,7 @@
       },
       "attack_rate": 56,
       "defend_rate": 48,
-      "hansoku_rate": 13,
+      "hansoku_rate": 38,
       "stamina": 63
     },
     "styleModifiers": {
@@ -529,7 +529,7 @@
       },
       "attack_rate": 54,
       "defend_rate": 50,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 70
     },
     "styleModifiers": {},
@@ -556,7 +556,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 48,
-      "hansoku_rate": 11,
+      "hansoku_rate": 35,
       "stamina": 65
     },
     "styleModifiers": {
@@ -592,7 +592,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 55,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 55
     },
     "styleModifiers": {
@@ -629,7 +629,7 @@
       },
       "attack_rate": 65,
       "defend_rate": 50,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -655,7 +655,7 @@
       },
       "attack_rate": 30,
       "defend_rate": 75,
-      "hansoku_rate": 5,
+      "hansoku_rate": 30,
       "stamina": 60
     },
     "styleModifiers": {},
@@ -682,7 +682,7 @@
       },
       "attack_rate": 46,
       "defend_rate": 46,
-      "hansoku_rate": 14,
+      "hansoku_rate": 40,
       "stamina": 55
     },
     "styleModifiers": {
@@ -717,7 +717,7 @@
       },
       "attack_rate": 40,
       "defend_rate": 55,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 50
     },
     "styleModifiers": {},
@@ -743,7 +743,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 50,
-      "hansoku_rate": 10,
+      "hansoku_rate": 30,
       "stamina": 75
     },
     "styleModifiers": {},
@@ -769,7 +769,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 50,
-      "hansoku_rate": 15,
+      "hansoku_rate": 35,
       "stamina": 70
     },
     "styleModifiers": {},
@@ -795,7 +795,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 65,
-      "hansoku_rate": 7,
+      "hansoku_rate": 30,
       "stamina": 63
     },
     "styleModifiers": {},
@@ -821,7 +821,7 @@
       },
       "attack_rate": 70,
       "defend_rate": 40,
-      "hansoku_rate": 15,
+      "hansoku_rate": 40,
       "stamina": 70
     },
     "styleModifiers": {},
@@ -847,7 +847,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 45,
-      "hansoku_rate": 20,
+      "hansoku_rate": 50,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -873,7 +873,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 45,
-      "hansoku_rate": 15,
+      "hansoku_rate": 45,
       "stamina": 60
     },
     "styleModifiers": {},
@@ -899,7 +899,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 50,
-      "hansoku_rate": 10,
+      "hansoku_rate": 35,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -925,7 +925,7 @@
       },
       "attack_rate": 60,
       "defend_rate": 35,
-      "hansoku_rate": 15,
+      "hansoku_rate": 35,
       "stamina": 60
     },
     "styleModifiers": {},
@@ -951,7 +951,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 55,
-      "hansoku_rate": 7,
+      "hansoku_rate": 35,
       "stamina": 75
     },
     "styleModifiers": {},
@@ -977,7 +977,7 @@
       },
       "attack_rate": 20,
       "defend_rate": 65,
-      "hansoku_rate": 10,
+      "hansoku_rate": 40,
       "stamina": 50
     },
     "styleModifiers": {},
@@ -1003,7 +1003,7 @@
       },
       "attack_rate": 45,
       "defend_rate": 35,
-      "hansoku_rate": 15,
+      "hansoku_rate": 40,
       "stamina": 50
     },
     "styleModifiers": {},
@@ -1030,7 +1030,7 @@
       },
       "attack_rate": 65,
       "defend_rate": 45,
-      "hansoku_rate": 15,
+      "hansoku_rate": 45,
       "stamina": 65
     },
     "styleModifiers": {
@@ -1065,7 +1065,7 @@
       },
       "attack_rate": 35,
       "defend_rate": 65,
-      "hansoku_rate": 10,
+      "hansoku_rate": 40,
       "stamina": 60
     },
     "styleModifiers": {},
@@ -1091,7 +1091,7 @@
       },
       "attack_rate": 39,
       "defend_rate": 39,
-      "hansoku_rate": 20,
+      "hansoku_rate": 45,
       "stamina": 55
     },
     "styleModifiers": {},
@@ -1118,7 +1118,7 @@
       },
       "attack_rate": 55,
       "defend_rate": 40,
-      "hansoku_rate": 15,
+      "hansoku_rate": 40,
       "stamina": 65
     },
     "styleModifiers": {
@@ -1153,7 +1153,7 @@
       },
       "attack_rate": 40,
       "defend_rate": 55,
-      "hansoku_rate": 15,
+      "hansoku_rate": 40,
       "stamina": 65
     },
     "styleModifiers": {},
@@ -1180,7 +1180,7 @@
       },
       "attack_rate": 70,
       "defend_rate": 20,
-      "hansoku_rate": 25,
+      "hansoku_rate": 55,
       "stamina": 75
     },
     "styleModifiers": {
