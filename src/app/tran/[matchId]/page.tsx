@@ -92,6 +92,14 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
   const [game, setGame] = useState<MatchGameRow | null | undefined>(undefined);
   const [spectatorLinkCopied, setSpectatorLinkCopied] = useState(false);
   const [showSpectatorLink, setShowSpectatorLink] = useState(false);
+  // Which game's own BoutResultBoard has actually finished narrating its
+  // log, per game.id — the server writes `result` and advances the series
+  // score/status the instant a game concludes, well before the log has
+  // finished revealing that to whoever's watching. The top-level series
+  // score and "thắng chung cuộc" banner below must not spoil the ending
+  // ahead of this component's own narration, so they're gated on this
+  // instead of reading match.series_score_a/b or match.status directly.
+  const [revealedGameId, setRevealedGameId] = useState<string | undefined>(undefined);
   // Undefined until fetched, null once fetched with nothing to show (already
   // locked in, or this game has no augment round). Never touched by
   // Realtime — it only ever comes from this player's own /augments/start
@@ -184,6 +192,23 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
   // Both sides confirmed a lineup (and, bundled into that same write, a
   // daihyosen representative) — the gate for running the bout.
   const lineupsReady = priorPhaseDone && game != null && !!(game.lineup_a && game.lineup_b);
+
+  // True only once THIS game's own BoutResultBoard has finished narrating —
+  // see the onFullyRevealed callback below. While game.result already exists
+  // (server-written, series already advanced) but this is still false, the
+  // score/banner below show the series as it stood BEFORE this game instead
+  // of the true current one, so nothing about this game's outcome leaks
+  // ahead of its own narration.
+  const resultRevealed = revealedGameId === gameId;
+  const scoreSpoiled = !!game?.result && !resultRevealed;
+  const displaySeriesScore = match
+    ? scoreSpoiled && game?.result
+      ? {
+          a: match.series_score_a - (game.result.result.winner === "A" ? 1 : 0),
+          b: match.series_score_b - (game.result.result.winner === "B" ? 1 : 0),
+        }
+      : { a: match.series_score_a, b: match.series_score_b }
+    : { a: 0, b: 0 };
 
   // Augments persist and stack for the rest of the series once picked —
   // this side's own current game_number doesn't carry that history on its
@@ -470,7 +495,7 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
           {names?.a ?? "…"} <span className="px-2 text-brass-600">vs</span> {names?.b ?? "…"}
         </h2>
         <p className="display text-3xl text-bone">
-          {match.series_score_a} — {match.series_score_b}
+          {displaySeriesScore.a} — {displaySeriesScore.b}
         </p>
         <p className="text-sm text-bone-faint">Ván {game?.game_number ?? match.current_game_number}</p>
         <button
@@ -604,10 +629,11 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
             seriesDecided={match.status === "completed"}
             onContinue={confirmContinue}
             continueConfirmed={(mySide === "A" ? game.continue_a : game.continue_b) ?? false}
+            onFullyRevealed={() => setRevealedGameId(game.id)}
           />
         </div>
       )}
-      {match.status === "completed" && (
+      {match.status === "completed" && resultRevealed && (
         <div className="flex flex-col items-center gap-2">
           <p className="display text-center text-lg text-brass-600">
             {match.series_score_a > match.series_score_b ? (names?.a ?? "Người chơi A") : (names?.b ?? "Người chơi B")}{" "}

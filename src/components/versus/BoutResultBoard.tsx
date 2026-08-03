@@ -91,6 +91,7 @@ export function BoutResultBoard({
   replay = false,
   hideActions = false,
   continueConfirmed = false,
+  onFullyRevealed,
 }: {
   match: DisplayMatch;
   teamAName: string;
@@ -134,6 +135,16 @@ export function BoutResultBoard({
    *  transition to the next game only fires once BOTH sides show true — see
    *  tran/[matchId]/page.tsx's effect watching continue_a && continue_b. */
   continueConfirmed?: boolean;
+  /** Fires once the beat-by-beat narration actually reaches the end of
+   *  `match.log` (not when the underlying `result`/series data becomes
+   *  available in the DB — those two are NOT the same moment: the server
+   *  writes the result and advances the series score the instant a game
+   *  concludes, well before this component has finished revealing that
+   *  game's own log to whoever's watching). A parent page showing its OWN
+   *  series score or "match over" banner alongside this component must gate
+   *  on this callback, not on raw match/series state, or it'll spoil the
+   *  ending mid-narration — see tran/[matchId]/page.tsx and xem/page.tsx. */
+  onFullyRevealed?: () => void;
 }) {
   const log = match.log;
   const [shown, setShown] = useState(replay ? log.length : 0);
@@ -145,6 +156,10 @@ export function BoutResultBoard({
     const timer = setTimeout(() => setShown((n) => n + 1), BEAT_MS);
     return () => clearTimeout(timer);
   }, [playing, shown, log.length]);
+
+  useEffect(() => {
+    if (shown >= log.length) onFullyRevealed?.();
+  }, [shown, log.length, onFullyRevealed]);
 
   // Sets scrollTop directly on the log's own scroll container rather than
   // scrollIntoView on a sentinel — scrollIntoView can walk up and move any

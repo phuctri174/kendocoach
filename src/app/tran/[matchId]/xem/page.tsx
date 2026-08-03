@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { BoutResultBoard } from "@/components/versus/BoutResultBoard";
 import type { MatchGameRow } from "@/lib/versus/draft";
@@ -8,6 +9,7 @@ import { toPlayers, type Player, type StatPath } from "@/lib/kendo";
 import { activeAugmentIdsFor, dynamicAugments, qualifyingAugments, resolvePlayerBonuses } from "@/lib/versus/bout";
 import type { Augment } from "@/lib/versus/augments";
 import { CLUB_ROSTER } from "@/data/club";
+import { SPECTATOR_HEARTBEAT_MS } from "@/lib/versus/spectate";
 
 const PERSON_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p]));
 
@@ -28,15 +30,25 @@ interface MatchRow {
   format: "bo3" | "bo5";
 }
 
+type ClaimState =
+  | { status: "pending" }
+  | { status: "player" }
+  | { status: "seated" }
+  | { status: "full" }
+  | { status: "error"; message: string };
+
 /**
  * Read-only mirror of tran/[matchId]/page.tsx for anyone with the link — no
- * account, no room seat. Deliberately does not share that file's code (same
- * "duplicate rather than risk the working interactive page" reasoning as
+ * account required (a guest/anonymous session is enough), but a room-style
+ * seat now IS required: one of the match's 4 spectator slots, claimed atomically
+ * via /api/matches/[matchId]/spectate/claim before any match content renders.
+ * Deliberately does not share tran/[matchId]/page.tsx's code (same "duplicate
+ * rather than risk the working interactive page" reasoning as
  * BoutResultBoard/MatchViewer) and never calls /api/games/start (that route
  * 403s a non-participant anyway) — it only ever reads the row a real
  * player's own page load already created, same public columns, same reveal
- * timing, purely via SELECT + subscriptions with zero write paths anywhere
- * on this page.
+ * timing, with zero write paths on this page besides the spectator-slot
+ * claim/heartbeat/leave calls themselves.
  */
 export default function SpectatePage({ params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = use(params);
@@ -44,6 +56,156 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
   const [match, setMatch] = useState<MatchRow | null | undefined>(undefined);
   const [names, setNames] = useState<{ a: string; b: string } | null>(null);
   const [game, setGame] = useState<MatchGameRow | null | undefined>(undefined);
+  const [claim, setClaim] = useState<ClaimState>({ status: "pending" });
+  const [spectatorCount, setSpectatorCount] = useState<number | null>(null);
+  // Which game's own BoutResultBoard has finished narrating, per game.id —
+  // same reasoning as tran/[matchId]/page.tsx: the server writes `result`
+  // and advances the series score/status the instant a game concludes,
+  // independent of (and typically well before) this spectator's own
+  // narration reaching the end of that game's log.
+  const [revealedGameId, setRevealedGameId] = useState<string | undefined>(undefined);
+
+  // Ensures at least a guest session before ever attempting a slot claim —
+  // "no account required" still holds (signInAnonymously asks for nothing),
+  // it just means a spectator now always has SOME auth.uid() to attribute a
+  // slot to, same identity shape AuthGate's own guest button already
+  // produces for room seats.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (user) return;
+      await supabase.auth.signInAnonymously();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
+
+  // Claims a slot once matchId is known. Retried every time matchId changes
+  // (it never does within one page view) — a fresh mount always re-attempts,
+  // which is also how a stale slot from a previous tab of the SAME user gets
+  // re-touched (the claim route treats "already holds a slot" as idempotent).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // The auth-ensuring effect above may still be in flight the very first
+      // time this runs; give it a moment rather than firing a claim with no
+      // session yet and surfacing a spurious error.
+      let uid: string | null = null;
+      for (let attempt = 0; attempt < 25 && !uid; attempt++) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        uid = user?.id ?? null;
+        if (!uid) await new Promise((r) => setTimeout(r, 200));
+      }
+      if (cancelled) return;
+      if (!uid) {
+        setClaim({ status: "error", message: "Không thể vào xem, thử tải lại trang." });
+        return;
+      }
+
+      const res = await fetch(`/api/matches/${matchId}/spectate/claim`, { method: "POST" });
+      const body = await res.json().catch(() => null);
+      if (cancelled) return;
+      if (!res.ok) {
+        setClaim(res.status === 409 ? { status: "full" } : { status: "error", message: body?.error ?? "Có lỗi xảy ra, thử lại." });
+        return;
+      }
+      setClaim(body?.role === "player" ? { status: "player" } : { status: "seated" });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, matchId]);
+
+  // Heartbeat while seated, so this slot isn't reclaimed as abandoned — plus
+  // a best-effort leave on tab close, and an explicit one from the "Rời
+  // phòng" button. There's no reliable server-side disconnect signal here
+  // (serverless, no persistent socket-owning process), so the heartbeat +
+  // staleness window (see the claim route) is what actually reclaims a slot
+  // after a hard crash/network loss; sendBeacon just makes the common case
+  // (closing the tab normally) free the slot immediately instead of waiting
+  // out the staleness window.
+  const leftRef = useRef(false);
+  const leaveNow = useCallback(() => {
+    if (leftRef.current) return;
+    leftRef.current = true;
+    navigator.sendBeacon(`/api/matches/${matchId}/spectate/leave`);
+  }, [matchId]);
+
+  useEffect(() => {
+    if (claim.status !== "seated") return;
+    const heartbeat = () => {
+      fetch(`/api/matches/${matchId}/spectate/heartbeat`, { method: "POST" }).catch(() => {});
+    };
+    const interval = setInterval(heartbeat, SPECTATOR_HEARTBEAT_MS);
+    const onPageHide = () => leaveNow();
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, [claim.status, matchId, leaveNow]);
+
+  // Client-side navigation away from this page unmounts it without ever
+  // firing `pagehide`, so this needs its own cleanup — but an effect with an
+  // empty dep array only ever closes over the claim state from its first
+  // render, which would always read as "pending" here. claimStatusRef tracks
+  // the latest value across renders so the (only-runs-once) cleanup below
+  // sees what's actually true at unmount time, not what was true on mount.
+  const claimStatusRef = useRef(claim.status);
+  useEffect(() => {
+    claimStatusRef.current = claim.status;
+  }, [claim.status]);
+  useEffect(() => {
+    return () => {
+      if (claimStatusRef.current === "seated") leaveNow();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const leaveManually = () => {
+    leftRef.current = true;
+    fetch(`/api/matches/${matchId}/spectate/leave`, { method: "POST" }).catch(() => {});
+    setClaim({ status: "error", message: "Bạn đã rời khỏi trận xem." });
+  };
+
+  // Live "x/4 đang xem" count — read-only, same public policy as the rest of
+  // this page (see 0016_spectator_slots.sql). Never gates rendering on its
+  // own; the claim response above is the only thing that does that.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from("match_spectators")
+        .select("*", { count: "exact", head: true })
+        .eq("match_id", matchId);
+      if (!cancelled) setSpectatorCount(count ?? 0);
+    })();
+    const channel = supabase
+      .channel(`match:${matchId}:spectator-count`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "match_spectators", filter: `match_id=eq.${matchId}` },
+        async () => {
+          const { count } = await supabase
+            .from("match_spectators")
+            .select("*", { count: "exact", head: true })
+            .eq("match_id", matchId);
+          if (!cancelled) setSpectatorCount(count ?? 0);
+        },
+      )
+      .subscribe();
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, matchId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,6 +275,19 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
     game != null &&
     (isOddGame ? !!(game.augment_pick_a && game.augment_pick_b) : !!(game.item_pick_a && game.item_pick_b));
   const lineupsReady = priorPhaseDone && game != null && !!(game.lineup_a && game.lineup_b);
+
+  // True only once THIS spectator's own BoutResultBoard has finished
+  // narrating this game — see the onFullyRevealed callback below.
+  const resultRevealed = revealedGameId === gameId;
+  const scoreSpoiled = !!game?.result && !resultRevealed;
+  const displaySeriesScore = match
+    ? scoreSpoiled && game?.result
+      ? {
+          a: match.series_score_a - (game.result.result.winner === "A" ? 1 : 0),
+          b: match.series_score_b - (game.result.result.winner === "B" ? 1 : 0),
+        }
+      : { a: match.series_score_a, b: match.series_score_b }
+    : { a: 0, b: 0 };
 
   const [priorAugmentRows, setPriorAugmentRows] = useState<AugmentHistoryRow[]>([]);
   useEffect(() => {
@@ -216,6 +391,26 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
   if (match === null) {
     return <p className="text-center text-sm text-bone-faint">Không tìm thấy trận đấu này.</p>;
   }
+  if (claim.status === "player") {
+    return (
+      <p className="text-center text-sm text-bone-faint">
+        Bạn là người chơi trong trận này —{" "}
+        <Link href={`/tran/${matchId}`} className="text-brass-600 underline underline-offset-4">
+          vào trận đấu
+        </Link>
+        .
+      </p>
+    );
+  }
+  if (claim.status === "full") {
+    return <p className="text-center text-sm text-bone-faint">Phòng xem đã đầy.</p>;
+  }
+  if (claim.status === "error") {
+    return <p className="text-center text-sm text-bone-faint">{claim.message}</p>;
+  }
+  if (claim.status === "pending") {
+    return <p className="text-center text-sm text-bone-faint">Đang vào phòng xem…</p>;
+  }
 
   return (
     <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
@@ -227,9 +422,21 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
           {names?.a ?? "…"} <span className="px-2 text-brass-600">vs</span> {names?.b ?? "…"}
         </h2>
         <p className="display text-3xl text-bone">
-          {match.series_score_a} — {match.series_score_b}
+          {displaySeriesScore.a} — {displaySeriesScore.b}
         </p>
         <p className="text-sm text-bone-faint">Ván {game?.game_number ?? match.current_game_number}</p>
+        <div className="flex items-center gap-3">
+          {spectatorCount !== null && (
+            <span className="text-[11px] text-bone-faint">{spectatorCount}/4 đang xem</span>
+          )}
+          <button
+            type="button"
+            onClick={leaveManually}
+            className="text-xs text-brass-600 underline underline-offset-4 hover:no-underline"
+          >
+            Rời phòng
+          </button>
+        </div>
       </header>
 
       {game === undefined && <p className="text-center text-sm text-bone-faint">Đang tải ván đấu…</p>}
@@ -287,11 +494,12 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
             seriesDecided={match.status === "completed"}
             onContinue={noop}
             hideActions
+            onFullyRevealed={() => setRevealedGameId(game.id)}
           />
         </div>
       )}
 
-      {match.status === "completed" && (
+      {match.status === "completed" && resultRevealed && (
         <p className="display text-center text-lg text-brass-600">
           {match.series_score_a > match.series_score_b ? (names?.a ?? "Người chơi A") : (names?.b ?? "Người chơi B")}{" "}
           thắng chung cuộc {Math.max(match.series_score_a, match.series_score_b)}-

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { HexPanel } from "@/components/Hex";
 import { createClient } from "@/lib/supabase/client";
 import type { RoomRow } from "@/lib/rooms/types";
+import { SpectateList } from "@/components/versus/SpectateList";
 
 interface ProfileLite {
   id: string;
@@ -213,6 +214,8 @@ export function RoomLobby({ myUserId, myDisplayName }: { myUserId: string; myDis
           );
         })}
       </ol>
+
+      <SpectateList />
     </section>
   );
 }
