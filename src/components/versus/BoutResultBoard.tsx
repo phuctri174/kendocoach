@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { HexPanel } from "@/components/Hex";
 import { CLUB_ROSTER } from "@/data/club";
@@ -118,12 +118,23 @@ export function BoutResultBoard({
   const log = match.log;
   const [shown, setShown] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!playing || shown >= log.length) return;
     const timer = setTimeout(() => setShown((n) => n + 1), BEAT_MS);
     return () => clearTimeout(timer);
   }, [playing, shown, log.length]);
+
+  // Sets scrollTop directly on the log's own scroll container rather than
+  // scrollIntoView on a sentinel — scrollIntoView can walk up and move any
+  // scrollable ancestor into view, which must NOT happen now that the rest
+  // of the page is deliberately non-scrolling: this must only ever move the
+  // log panel's own scrollbar.
+  useEffect(() => {
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [shown]);
 
   const finished = shown >= log.length;
   const visible = useMemo(() => log.slice(0, shown), [log, shown]);
@@ -185,6 +196,7 @@ export function BoutResultBoard({
         <div className="flex min-h-0 flex-col gap-1.5 sm:gap-3">
           <HexPanel cut={18} className="min-h-0 flex-1">
             <div
+              ref={logRef}
               className="flex h-full flex-col gap-1 overflow-y-auto px-3 py-2 sm:px-5 sm:py-5"
               aria-live="polite"
             >

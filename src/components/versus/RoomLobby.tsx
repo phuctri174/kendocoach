@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HexPanel } from "@/components/Hex";
 import { createClient } from "@/lib/supabase/client";
@@ -99,12 +99,84 @@ export function RoomLobby({ myUserId, myDisplayName }: { myUserId: string; myDis
 
   const myRoomId = rooms?.find((r) => r.occupant_a === myUserId || r.occupant_b === myUserId)?.id ?? null;
 
+  // Whoever's ready-flip is the one that observes both flags true creates the
+  // match and immediately frees the room (see ready/route.ts) — the OTHER
+  // player's own request never carries a matchId back, so historically they
+  // depended entirely on the matchAChannel/matchBChannel subscriptions above
+  // to notice the new row and navigate. That's a single best-effort Realtime
+  // delivery with no fallback: if it's ever slow or missed for one side while
+  // the shared "rooms" row (which both sides watch) has already reset their
+  // seat, that side sees an empty room and nothing ever routes them onward —
+  // stuck looking "kicked out" even though a real match was created for them.
+  // This ref lets us notice exactly that transition (seated → unseated,
+  // without an explicit leave) and directly ask "was I actually just placed
+  // into a match?" instead of only ever waiting on the one Realtime event.
+  const wasSeatedRef = useRef(false);
+  const explicitLeaveRef = useRef(false);
+
+  const checkForActiveMatch = useCallback(async () => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const { data } = await supabase
+        .from("matches")
+        .select("id")
+        .or(`player_a.eq.${myUserId},player_b.eq.${myUserId}`)
+        .neq("status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        router.push(`/tran/${data.id}`);
+        return;
+      }
+      await new Promise((r) => setTimeout(r, 200));
+    }
+  }, [supabase, router, myUserId]);
+
+  useEffect(() => {
+    const isSeated = myRoomId !== null;
+    if (wasSeatedRef.current && !isSeated) {
+      if (explicitLeaveRef.current) {
+        // We asked to leave ourselves — the lobby view is already correct,
+        // no need to go looking for a match that was never created.
+        explicitLeaveRef.current = false;
+      } else {
+        checkForActiveMatch();
+      }
+    }
+    wasSeatedRef.current = isSeated;
+  }, [myRoomId, checkForActiveMatch]);
+
   const act = async (path: string, roomId: number) => {
     setBusyRoom(roomId);
     setError(null);
     const result = await postRoomAction(path, roomId);
     setBusyRoom(null);
     if (result.error) setError(result.error);
+  };
+
+  const leave = async (roomId: number) => {
+    explicitLeaveRef.current = true;
+    await act("/api/rooms/leave", roomId);
+  };
+
+  const ready = async (roomId: number) => {
+    setBusyRoom(roomId);
+    setError(null);
+    const res = await fetch("/api/rooms/ready", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId }),
+    });
+    const body = await res.json().catch(() => null);
+    setBusyRoom(null);
+    if (!res.ok) {
+      setError(body?.error ?? "Có lỗi xảy ra, thử lại.");
+      return;
+    }
+    // If our own ready-flip was the one that observed both sides ready, the
+    // match id comes straight back here — no need to wait on Realtime at all
+    // for this side.
+    if (body?.matchId) router.push(`/tran/${body.matchId}`);
   };
 
   if (!rooms) {
@@ -134,8 +206,8 @@ export function RoomLobby({ myUserId, myDisplayName }: { myUserId: string; myDis
               blockedByOtherRoom={myRoomId !== null && myRoomId !== id}
               busy={busyRoom === id}
               onJoin={() => act("/api/rooms/join", id)}
-              onLeave={() => act("/api/rooms/leave", id)}
-              onReady={() => act("/api/rooms/ready", id)}
+              onLeave={() => leave(id)}
+              onReady={() => ready(id)}
             />
           );
         })}
