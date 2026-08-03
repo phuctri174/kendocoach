@@ -88,6 +88,7 @@ export function BoutResultBoard({
   seriesDecided,
   onContinue,
   daihyosenPending,
+  replay = false,
 }: {
   match: DisplayMatch;
   teamAName: string;
@@ -114,10 +115,14 @@ export function BoutResultBoard({
     onPickRepresentative: (id: string) => void;
     busy: boolean;
   };
+  /** Reviewing an already-decided game (history) shows the whole log
+   *  immediately instead of animating it beat by beat — same meaning as
+   *  MatchViewer's own `replay` prop in solo mode. */
+  replay?: boolean;
 }) {
   const log = match.log;
-  const [shown, setShown] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [shown, setShown] = useState(replay ? log.length : 0);
+  const [playing, setPlaying] = useState(!replay);
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

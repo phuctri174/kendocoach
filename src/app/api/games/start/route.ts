@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { CLUB_ROSTER } from "@/data/club";
-import { initialDraftState } from "@/lib/versus/draft";
+import { initialDraftState, type DraftSide } from "@/lib/versus/draft";
 import { GAME_TIME_LIMITS } from "@/lib/versus/config";
+import type { TeamMatch } from "@/lib/kendo/types";
 
 const ROSTER_IDS = CLUB_ROSTER.map((p) => p.id);
 
@@ -50,13 +51,37 @@ export async function POST(request: Request) {
     return NextResponse.json(existing);
   }
 
+  // Comeback seeding: from game 2 onward, whoever lost the previous game
+  // picks first in this game's draft (see DraftState.firstPicker). Game 1
+  // has no previous result, so it falls through to the "A" default — same
+  // as whatever currently assigns that seat (room join/ready order),
+  // unchanged. The previous game's own `result` is read directly rather
+  // than tracked via any new column on `matches` — it's already the
+  // authoritative record of who won, and can't drift out of sync with
+  // itself the way a duplicated column could under a race/retry.
+  let firstPicker: DraftSide = "A";
+  if (gameNumber > 1) {
+    const { data: prevGame } = await admin
+      .from("match_games")
+      .select("result")
+      .eq("match_id", matchId)
+      .eq("game_number", gameNumber - 1)
+      .maybeSingle();
+    const prevWinner = (prevGame?.result as TeamMatch | null)?.result.winner;
+    // A prior draw shouldn't really happen (see advanceSeriesAfterGame) —
+    // falls through to the "A" default same as game 1, rather than seeding
+    // anything from an outcome that isn't really a clean win/loss.
+    if (prevWinner === "A") firstPicker = "B";
+    else if (prevWinner === "B") firstPicker = "A";
+  }
+
   const { data: created, error } = await admin
     .from("match_games")
     .insert({
       match_id: matchId,
       game_number: gameNumber,
       time_limit_seconds: GAME_TIME_LIMITS[gameNumber] ?? 120,
-      draft_state: initialDraftState(ROSTER_IDS),
+      draft_state: initialDraftState(ROSTER_IDS, firstPicker),
     })
     .select()
     .single();

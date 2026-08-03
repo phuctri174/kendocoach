@@ -6,6 +6,7 @@ import { AuthNavItem } from "@/components/versus/AuthNavItem";
 
 const LINKS = [
   { href: "/", label: "Đấu đối kháng" },
+  { href: "/lich-su", label: "Lịch Sử Đấu" },
   { href: "/dau-don", label: "Đấu đơn" },
   { href: "/chi-so", label: "Bảng Xếp Hạng Sức Mạnh" },
 ];

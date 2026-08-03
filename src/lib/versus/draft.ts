@@ -5,11 +5,16 @@
  * roster is passed in rather than imported, so tests can shrink it to make
  * pool-recycling deterministic instead of racing real randomness.
  *
- * Turn schedule per game (spec-fixed, not configurable):
- *   Phase 1 — A picks 1, then B picks 2   (3 of 5 taken; 2 leftover)
- *   Phase 2 — B picks 1, then A picks 2   (3 of 5 taken; 2 leftover)
- *   Phase 3 — A picks 1, B picks 2, A picks 1   (4 of 5 taken; 1 discarded)
- * End state: A has 5 (1+2+1+1), B has 5 (2+1+2) — the fairness guarantee.
+ * Turn schedule per game (spec-fixed shape, not configurable):
+ *   Phase 1 — first-picker picks 1, then the other picks 2   (3 of 5; 2 leftover)
+ *   Phase 2 — other picks 1, then first-picker picks 2       (3 of 5; 2 leftover)
+ *   Phase 3 — first-picker 1, other 2, first-picker 1        (4 of 5; 1 discarded)
+ * End state: first-picker has 5 (1+2+1+1), the other has 5 (2+1+2) — the
+ * fairness guarantee holds regardless of which literal side (A/B) is
+ * seeded to go first (see `firstPicker` on DraftState — the comeback rule
+ * in games/start/route.ts seeds the previous game's loser to go first from
+ * game 2 onward; game 1 has no previous result, so it defaults to "A", same
+ * as when this schedule was hardcoded to always start with A).
  *
  * Pool recycling: each phase's roll excludes only players actually DRAFTED
  * so far this game (pickedA ∪ pickedB) — never the previous phase's
@@ -97,6 +102,12 @@ export interface DraftState {
   pickedB: string[];
   turnDeadline: string;
   status: "drafting" | "complete";
+  /** Which literal side (A/B) the PHASE_TURNS schedule below is anchored
+   *  to — "A" means the schedule runs exactly as written; "B" means every
+   *  scheduled side is mirrored (see currentTurnSide). Doesn't change what
+   *  pickedA/pickedB mean (still literally "picked by DB player_a/_b") —
+   *  only which side's turn comes first/second at each step. */
+  firstPicker: DraftSide;
 }
 
 interface TurnSpec {
@@ -123,7 +134,9 @@ export const PHASE_TURNS: Record<Phase, TurnSpec[]> = {
 export const TURN_SECONDS = 18;
 
 export function currentTurnSide(state: DraftState): DraftSide {
-  return PHASE_TURNS[state.phase][state.turnIndex].side;
+  const scheduled = PHASE_TURNS[state.phase][state.turnIndex].side;
+  if (state.firstPicker === "A") return scheduled;
+  return scheduled === "A" ? "B" : "A";
 }
 
 function turnDeadline(now: number = Date.now()): string {
@@ -140,7 +153,7 @@ export function rollPool(allIds: readonly string[], excludeIds: ReadonlySet<stri
   return eligible.slice(0, Math.min(count, eligible.length));
 }
 
-export function initialDraftState(allIds: readonly string[]): DraftState {
+export function initialDraftState(allIds: readonly string[], firstPicker: DraftSide = "A"): DraftState {
   return {
     phase: 1,
     turnIndex: 0,
@@ -150,6 +163,7 @@ export function initialDraftState(allIds: readonly string[]): DraftState {
     pickedB: [],
     turnDeadline: turnDeadline(),
     status: "drafting",
+    firstPicker,
   };
 }
 
@@ -196,6 +210,7 @@ export function applyPick(state: DraftState, side: DraftSide, candidateId: strin
       pickedB,
       turnDeadline: turnDeadline(),
       status: "drafting",
+      firstPicker: state.firstPicker,
     };
   }
 

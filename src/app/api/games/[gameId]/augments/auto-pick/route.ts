@@ -71,8 +71,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ ga
     return NextResponse.json({ error: "Chưa hết giờ." }, { status: 409 });
   }
 
+  // First of the 3 offered — not random — so a timed-out pick is at least
+  // predictable/deterministic for the player who missed the window.
   const offered = offer.offered as string[];
-  const augmentId = offered[Math.floor(Math.random() * offered.length)];
+  const augmentId = offered[0];
 
   // Same own-column-null guard as the manual pick route.
   const { data: updated, error } = await admin

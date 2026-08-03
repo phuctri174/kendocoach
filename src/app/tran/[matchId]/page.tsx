@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { DraftBoard } from "@/components/versus/DraftBoard";
 import { AugmentBoard } from "@/components/versus/AugmentBoard";
@@ -548,11 +549,16 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
         </div>
       )}
       {match.status === "completed" && (
-        <p className="display text-center text-lg text-brass-600">
-          {match.series_score_a > match.series_score_b ? (names?.a ?? "Người chơi A") : (names?.b ?? "Người chơi B")}{" "}
-          thắng chung cuộc {Math.max(match.series_score_a, match.series_score_b)}-
-          {Math.min(match.series_score_a, match.series_score_b)}!
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <p className="display text-center text-lg text-brass-600">
+            {match.series_score_a > match.series_score_b ? (names?.a ?? "Người chơi A") : (names?.b ?? "Người chơi B")}{" "}
+            thắng chung cuộc {Math.max(match.series_score_a, match.series_score_b)}-
+            {Math.min(match.series_score_a, match.series_score_b)}!
+          </p>
+          <Link href={`/lich-su/${matchId}`} className="text-xs text-brass-600 underline underline-offset-4">
+            Xem lại trận đấu
+          </Link>
+        </div>
       )}
     </section>
   );
