@@ -64,7 +64,6 @@ body {
   background-attachment: fixed;
   color: var(--color-bone);
   font-family: var(--font-body);
-  min-height: 100vh;
 }
 
 /* type=search draws its own clear button; our fields supply a styled one. */

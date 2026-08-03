@@ -429,8 +429,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
   }
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
-      <header className="flex flex-col items-center gap-1 text-center">
+    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
+      <header className="shrink-0 flex flex-col items-center gap-1 text-center">
         <p className="display text-xs text-brass-600">Đấu đối kháng · Bo5</p>
         <h2 className="display text-xl text-bone sm:text-2xl">
           {names?.a ?? "…"} <span className="px-2 text-brass-600">vs</span> {names?.b ?? "…"}
@@ -505,43 +505,47 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
         <p className="text-center text-sm text-bone-faint">Đang mô phỏng trận đấu…</p>
       )}
       {game && game.bout_provisional && !game.result && (
-        <BoutResultBoard
-          key={game.id}
-          match={game.bout_provisional}
-          teamAName={names?.a ?? "Người chơi A"}
-          teamBName={names?.b ?? "Người chơi B"}
-          augmentBadgesA={augmentBadgesA}
-          augmentBadgesB={augmentBadgesB}
-          itemEquipsA={game.item_equips_a}
-          itemEquipsB={game.item_equips_b}
-          basePlayerById={basePlayerById}
-          bonusByPlayer={mapToRecord(fullBonusByPlayer)}
-          seriesDecided={false}
-          onContinue={goToNextGame}
-          daihyosenPending={{
-            myRoster: mySide === "A" ? game.draft_state.pickedA : game.draft_state.pickedB,
-            myRepresentative: (mySide === "A" ? game.representative_a : game.representative_b) ?? null,
-            opponentRepresentative: (mySide === "A" ? game.representative_b : game.representative_a) ?? null,
-            onPickRepresentative: pickRepresentative,
-            busy: pickingRepresentative,
-          }}
-        />
+        <div className="flex min-h-0 w-full flex-1 flex-col">
+          <BoutResultBoard
+            key={game.id}
+            match={game.bout_provisional}
+            teamAName={names?.a ?? "Người chơi A"}
+            teamBName={names?.b ?? "Người chơi B"}
+            augmentBadgesA={augmentBadgesA}
+            augmentBadgesB={augmentBadgesB}
+            itemEquipsA={game.item_equips_a}
+            itemEquipsB={game.item_equips_b}
+            basePlayerById={basePlayerById}
+            bonusByPlayer={mapToRecord(fullBonusByPlayer)}
+            seriesDecided={false}
+            onContinue={goToNextGame}
+            daihyosenPending={{
+              myRoster: mySide === "A" ? game.draft_state.pickedA : game.draft_state.pickedB,
+              myRepresentative: (mySide === "A" ? game.representative_a : game.representative_b) ?? null,
+              opponentRepresentative: (mySide === "A" ? game.representative_b : game.representative_a) ?? null,
+              onPickRepresentative: pickRepresentative,
+              busy: pickingRepresentative,
+            }}
+          />
+        </div>
       )}
       {game && game.result && (
-        <BoutResultBoard
-          key={game.id}
-          match={game.result}
-          teamAName={names?.a ?? "Người chơi A"}
-          teamBName={names?.b ?? "Người chơi B"}
-          augmentBadgesA={augmentBadgesA}
-          augmentBadgesB={augmentBadgesB}
-          itemEquipsA={game.item_equips_a}
-          itemEquipsB={game.item_equips_b}
-          basePlayerById={basePlayerById}
-          bonusByPlayer={mapToRecord(fullBonusByPlayer)}
-          seriesDecided={match.status === "completed"}
-          onContinue={goToNextGame}
-        />
+        <div className="flex min-h-0 w-full flex-1 flex-col">
+          <BoutResultBoard
+            key={game.id}
+            match={game.result}
+            teamAName={names?.a ?? "Người chơi A"}
+            teamBName={names?.b ?? "Người chơi B"}
+            augmentBadgesA={augmentBadgesA}
+            augmentBadgesB={augmentBadgesB}
+            itemEquipsA={game.item_equips_a}
+            itemEquipsB={game.item_equips_b}
+            basePlayerById={basePlayerById}
+            bonusByPlayer={mapToRecord(fullBonusByPlayer)}
+            seriesDecided={match.status === "completed"}
+            onContinue={goToNextGame}
+          />
+        </div>
       )}
       {match.status === "completed" && (
         <p className="display text-center text-lg text-brass-600">

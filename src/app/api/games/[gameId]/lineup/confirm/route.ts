@@ -140,11 +140,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
   // and concurrently (there's no turn order here, unlike draft picks), so a
   // shared optimistic-concurrency counter produces false conflicts: side B
   // confirming has no reason to make side A's confirm fail, but it would
-  // under a shared `.eq("lineup_seq", ...)` guard. lineup_seq still gets
-  // bumped for the client's own broadcast/postgres_changes staleness check.
+  // under a shared `.eq("lineup_seq", ...)` guard. lineup_seq itself is
+  // bumped by the match_games_bump_seq trigger (0012_atomic_seq_bump.sql),
+  // not computed here — a JS-side `game.lineup_seq + 1` from this request's
+  // pre-fetch would race with the opponent's concurrent confirm and lose an
+  // increment, which the client relies on to detect the other side's write.
   const { data: updated, error } = await admin
     .from("match_games")
-    .update({ [column]: lineup, [equipsColumn]: equips, lineup_seq: game.lineup_seq + 1 })
+    .update({ [column]: lineup, [equipsColumn]: equips })
     .eq("id", gameId)
     .is(column, null)
     .select()

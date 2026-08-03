@@ -223,7 +223,7 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
           Không tìm thấy kendoka nào khớp “{query}”.
         </p>
       ) : (
-        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ol className="grid grid-cols-3 gap-2.5 sm:gap-4 xl:grid-cols-4">
           {sorted.map((row, i) => (
             <li key={row.id}>
               <KendokaCard
@@ -257,22 +257,22 @@ function KendokaCard({
 }) {
   return (
     <HexPanel className="h-full" cut={16}>
-      <div className="flex h-full flex-col gap-2 px-3 py-3 sm:gap-3 sm:px-4 sm:py-4">
-        <header className="flex items-start justify-between gap-2 border-b border-brass-600/25 pb-2">
+      <div className="flex h-full flex-col gap-1.5 px-2.5 py-2.5 sm:gap-3 sm:px-4 sm:py-4">
+        <header className="flex items-start justify-between gap-1.5 border-b border-brass-600/25 pb-1.5 sm:gap-2 sm:pb-2">
           <div className="min-w-0">
-            <h2 className="display text-base leading-tight text-bone">{row.name}</h2>
+            <h2 className="display text-[13px] leading-tight text-bone sm:text-base">{row.name}</h2>
             {row.styles.length > 1 && (
-              <p className="text-[11px] text-brass-600">Có thể: {row.styles.join(", ")}</p>
+              <p className="text-[9px] text-brass-600 sm:text-[11px]">Có thể: {row.styles.join(", ")}</p>
             )}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-0.5">
             {rank !== null && (
-              <span className="display text-[11px] text-bone-faint">#{rank}</span>
+              <span className="display text-[9px] text-bone-faint sm:text-[11px]">#{rank}</span>
             )}
             <span
-              className={`display text-[11px] ${
+              className={`display text-[9px] sm:text-[11px] ${
                 highlight === "overall"
-                  ? "bg-brass-400/20 px-1.5 text-brass-600"
+                  ? "bg-brass-400/20 px-1 text-brass-600 sm:px-1.5"
                   : "text-bone-faint"
               }`}
               title="Tổng lực — tỉ lệ thắng ước tính trước một đối thủ trung bình"
@@ -283,9 +283,13 @@ function KendokaCard({
         </header>
 
         {GROUPS.map((group) => (
-          <section key={group.label} className="flex flex-col gap-1">
-            <h3 className="display text-[10px] text-brass-600">{group.label}</h3>
-            <dl className="grid grid-cols-2 gap-x-3 gap-y-1">
+          <section key={group.label} className="flex flex-col gap-0.5 sm:gap-1">
+            <h3 className="display text-[9px] text-brass-600 sm:text-[10px]">{group.label}</h3>
+            {/* One stat per row below sm: at 2-3 cards per mobile row a card
+                is only ~110-175px wide, so a 2-up internal grid would leave
+                each stat cell too narrow for its label + value + bar to read
+                at a glance. */}
+            <dl className="grid grid-cols-1 gap-x-2 gap-y-0.5 sm:grid-cols-2 sm:gap-x-3 sm:gap-y-1">
               {group.stats.map((stat) => (
                 <StatCell
                   key={stat.key}
@@ -303,13 +307,15 @@ function KendokaCard({
 
 function StatCell({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex flex-col gap-0.5 px-1 py-0.5">
+    <div className="flex flex-col gap-0.5 py-px sm:px-1 sm:py-0.5">
       <div className="flex items-baseline justify-between gap-2">
-        <dt className="text-[11px] text-bone-faint">{label}</dt>
-        <dd className="text-sm tabular-nums text-bone-dim">{value}</dd>
+        <dt className="text-[10px] text-bone-faint sm:text-[11px]">{label}</dt>
+        <dd className="text-xs tabular-nums text-bone-dim sm:text-sm">{value}</dd>
       </div>
-      {/* Thin track so a card can be scanned at a glance, not read digit by digit. */}
-      <div className="h-1 w-full bg-paper-dim">
+      {/* Thin track so a card can be scanned at a glance, not read digit by
+          digit — kept at a floor of 3px even when compact: any thinner and
+          the fill becomes hard to judge by eye. */}
+      <div className="h-[3px] w-full bg-paper-dim sm:h-1">
         <div
           className="h-full bg-forest-500"
           style={{ width: `${Math.max(0, Math.min(100, value))}%` }}

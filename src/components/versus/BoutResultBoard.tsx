@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { HexPanel } from "@/components/Hex";
 import { CLUB_ROSTER } from "@/data/club";
@@ -118,17 +118,12 @@ export function BoutResultBoard({
   const log = match.log;
   const [shown, setShown] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!playing || shown >= log.length) return;
     const timer = setTimeout(() => setShown((n) => n + 1), BEAT_MS);
     return () => clearTimeout(timer);
   }, [playing, shown, log.length]);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [shown]);
 
   const finished = shown >= log.length;
   const visible = useMemo(() => log.slice(0, shown), [log, shown]);
@@ -156,19 +151,26 @@ export function BoutResultBoard({
   const latestScore = visible.length ? (visible[visible.length - 1].score ?? { a: 0, b: 0 }) : { a: 0, b: 0 };
 
   return (
-    <section className="flex flex-col gap-2 sm:gap-6">
-      <MatchSummary
-        teamAName={teamAName}
-        teamBName={teamBName}
-        bouts={all}
-        progress={progress}
-        showAll={finished}
-        latestScore={latestScore}
-        augmentsA={augmentBadgesA}
-        augmentsB={augmentBadgesB}
-      />
+    <section className="flex h-full min-h-0 flex-col gap-2 sm:gap-6">
+      <div className="shrink-0">
+        <MatchSummary
+          teamAName={teamAName}
+          teamBName={teamBName}
+          bouts={all}
+          progress={progress}
+          showAll={finished}
+          latestScore={latestScore}
+          augmentsA={augmentBadgesA}
+          augmentsB={augmentBadgesB}
+        />
+      </div>
 
-      <div className="grid gap-2 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
+      {/* Everything above this row fits the viewport like the rest of the
+          app — this row alone is the exception, and even within it, only
+          the log panel scrolls. min-h-0 lets the row (and the log column
+          inside it) shrink below their natural content height so the log's
+          own overflow-y-auto is what activates, instead of the page. */}
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-2 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-none lg:gap-6">
         <Scoreboard
           bouts={all}
           progress={progress}
@@ -180,20 +182,19 @@ export function BoutResultBoard({
           bonusByPlayer={bonusByPlayer}
         />
 
-        <div className="flex flex-col gap-1.5 sm:gap-3">
-          <HexPanel cut={18}>
+        <div className="flex min-h-0 flex-col gap-1.5 sm:gap-3">
+          <HexPanel cut={18} className="min-h-0 flex-1">
             <div
-              className="flex h-[10dvh] min-h-[64px] flex-col gap-1 overflow-y-auto px-3 py-1.5 sm:h-[420px] sm:min-h-0 sm:px-5 sm:py-5"
+              className="flex h-full flex-col gap-1 overflow-y-auto px-3 py-2 sm:px-5 sm:py-5"
               aria-live="polite"
             >
               {visible.map((event) => (
                 <LogLine key={event.id} event={event} />
               ))}
-              <div ref={endRef} />
             </div>
           </HexPanel>
 
-          <div className="flex flex-col items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 flex-col items-center gap-2 sm:gap-3">
             {finished ? (
               daihyosenPending ? (
                 <DaihyosenPicker {...daihyosenPending} />

@@ -76,10 +76,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
   // read-modify-write of one jsonb object (see 0010_pick_columns.sql). The
   // inventory append below only ever runs once this guard has actually
   // succeeded, so it can't race with a second concurrent pick attempt from
-  // the same side either.
+  // the same side either. item_seq is bumped by the match_games_bump_seq
+  // trigger (0012_atomic_seq_bump.sql), not computed from this request's
+  // pre-fetch — see that migration for why a JS-side increment here would
+  // race with the opponent's concurrent pick and lose an increment.
   const { data: updated, error } = await admin
     .from("match_games")
-    .update({ [column]: itemId, item_seq: game.item_seq + 1 })
+    .update({ [column]: itemId })
     .eq("id", gameId)
     .is(column, null)
     .select()

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HexPanel } from "@/components/Hex";
 import {
   HANSOKU_GLYPH,
@@ -68,17 +68,12 @@ export function MatchViewer({
   const log = outcome.match.log;
   const [shown, setShown] = useState(replay ? log.length : 0);
   const [playing, setPlaying] = useState(!replay);
-  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!playing || shown >= log.length) return;
     const timer = setTimeout(() => setShown((n) => n + 1), BEAT_MS);
     return () => clearTimeout(timer);
   }, [playing, shown, log.length]);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [shown]);
 
   const finished = shown >= log.length;
   const visible = useMemo(() => log.slice(0, shown), [log, shown]);
@@ -116,8 +111,8 @@ export function MatchViewer({
     : { a: 0, b: 0 };
 
   return (
-    <section className="flex flex-col gap-4 sm:gap-6">
-      <header className="flex flex-col items-center gap-1 text-center">
+    <section className="flex h-full min-h-0 flex-col gap-4 sm:gap-6">
+      <header className="flex shrink-0 flex-col items-center gap-1 text-center">
         <p className="display text-xs text-brass-600">{outcome.round.label}</p>
         <h2 className="display text-lg text-bone sm:text-2xl">
           {outcome.match.teamA.name}
@@ -126,35 +121,37 @@ export function MatchViewer({
         </h2>
       </header>
 
-      <MatchSummary
-        outcome={outcome}
-        bouts={all}
-        progress={progress}
-        showAll={finished}
-        latestScore={latestScore}
-      />
+      <div className="shrink-0">
+        <MatchSummary
+          outcome={outcome}
+          bouts={all}
+          progress={progress}
+          showAll={finished}
+          latestScore={latestScore}
+        />
+      </div>
 
-      {/* Below lg the two panes stack: scoreboard first, then the log. The
-          log's own height is viewport-relative on mobile (not a flat px
-          number) so it scales down on short phones instead of pushing the
-          page past one screen — see the dvh unit below. */}
-      <div className="grid gap-3 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
+      {/* Everything above this row fits the viewport like the rest of the
+          app — this row alone is the exception, and even within it, only
+          the log panel scrolls. min-h-0 lets the row (and the log column
+          inside it) shrink below their natural content height so the log's
+          own overflow-y-auto is what activates, instead of the page. */}
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-none lg:gap-6">
         <Scoreboard bouts={all} progress={progress} resolved={resolved} showAll={finished} />
 
-        <div className="flex flex-col gap-2 sm:gap-3">
-          <HexPanel cut={18}>
+        <div className="flex min-h-0 flex-col gap-2 sm:gap-3">
+          <HexPanel cut={18} className="min-h-0 flex-1">
             <div
-              className="flex h-[19dvh] min-h-[120px] flex-col gap-1 overflow-y-auto px-3 py-2 sm:h-[420px] sm:min-h-0 sm:px-5 sm:py-5"
+              className="flex h-full flex-col gap-1 overflow-y-auto px-3 py-2 sm:px-5 sm:py-5"
               aria-live="polite"
             >
               {visible.map((event) => (
                 <LogLine key={event.id} event={event} />
               ))}
-              <div ref={endRef} />
             </div>
           </HexPanel>
 
-          <div className="flex justify-center gap-3">
+          <div className="flex shrink-0 justify-center gap-3">
             {finished ? (
               <button
                 type="button"
