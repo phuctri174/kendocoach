@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { HexPanel } from "@/components/Hex";
 import { CLUB_ROSTER } from "@/data/club";
 import { createClient } from "@/lib/supabase/server";
+import { PassiveBadge } from "@/components/versus/PassiveBadge";
 
 export const metadata: Metadata = {
   title: "Tier List Nhân Vật — Đà Lạt Kendo Club",
@@ -121,7 +122,10 @@ export default async function TierListPage() {
               <HexPanel cut={12} className="h-full">
                 <div className="flex h-full flex-col items-center justify-center gap-1.5 p-2 text-center">
                   <span className="display text-[10px] text-brass-600">#{i + 1}</span>
-                  <span className="display min-w-0 truncate px-1 text-xs text-bone sm:text-sm">{row.name}</span>
+                  <span className="display flex min-w-0 max-w-full items-center gap-1 px-1 text-xs text-bone sm:text-sm">
+                    <span className="min-w-0 truncate">{row.name}</span>
+                    <PassiveBadge playerId={row.id} variant="label" />
+                  </span>
                   <div className="mt-1 flex flex-col items-center gap-0.5">
                     <RateLine label="Chọn" value={row.pickRate} />
                     <RateLine label="Thắng" value={row.winRate} />

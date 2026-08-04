@@ -257,7 +257,7 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
   [ID.nguyenHoangMinhTam]: [
     {
       name: "Độc Hành",
-      text: "Không dựa vào hào quang của bất kỳ ai, cũng chẳng nao núng trước uy thế của đối phương — bước đi một mình trên con đường của riêng mình, không hề bị lay chuyển bởi những gì xảy ra xung quanh.",
+      text: "Anh không ảnh hưởng bởi bất kì hiệu ứng về nội tại của bất kì kiếm sĩ nào cả bên mình và địch.",
     },
   ],
 };

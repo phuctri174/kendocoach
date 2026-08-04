@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { HexPanel } from "@/components/Hex";
 import { overallStrength, type CombatStyle, type Technique } from "@/lib/kendo";
+import { PassiveBadge } from "@/components/versus/PassiveBadge";
 
 /** Exactly what the viewer shows — no modifiers or weights. */
 export interface KendokaRow {
@@ -260,7 +261,10 @@ function KendokaCard({
       <div className="flex h-full flex-col gap-1.5 px-2.5 py-2.5 sm:gap-3 sm:px-4 sm:py-4">
         <header className="flex items-start justify-between gap-1.5 border-b border-brass-600/25 pb-1.5 sm:gap-2 sm:pb-2">
           <div className="min-w-0">
-            <h2 className="display text-[13px] leading-tight text-bone sm:text-base">{row.name}</h2>
+            <h2 className="display flex min-w-0 items-baseline gap-1 text-[13px] leading-tight text-bone sm:text-base">
+              <span className="min-w-0 truncate">{row.name}</span>
+              <PassiveBadge playerId={row.id} variant="label" />
+            </h2>
             {row.styles.length > 1 && (
               <p className="text-[9px] text-brass-600 sm:text-[11px]">Có thể: {row.styles.join(", ")}</p>
             )}

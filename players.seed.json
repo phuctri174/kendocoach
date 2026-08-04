@@ -938,14 +938,14 @@
     ],
     "baseStats": {
       "technique": {
-        "men": 88,
+        "men": 85,
         "kote": 80,
         "dou": 70,
         "tsuki": 7
       },
       "defense": {
         "men": 80,
-        "kote": 80,
+        "kote": 75,
         "dou": 75,
         "tsuki": 50
       },
@@ -1052,21 +1052,21 @@
     ],
     "baseStats": {
       "technique": {
-        "men": 65,
+        "men": 70,
         "kote": 65,
         "dou": 50,
         "tsuki": 5
       },
       "defense": {
-        "men": 60,
+        "men": 65,
         "kote": 60,
         "dou": 65,
         "tsuki": 50
       },
-      "attack_rate": 35,
+      "attack_rate": 45,
       "defend_rate": 65,
       "hansoku_rate": 40,
-      "stamina": 60
+      "stamina": 65
     },
     "styleModifiers": {},
     "styleWeights": {}

@@ -14,11 +14,26 @@ import { PASSIVE_BLOCKS_BY_CHARACTER_ID } from "@/lib/versus/passives";
  * same interaction as EquipBadge/PlayerHoverCard. Renders nothing for a
  * player with no passive, so callers can drop it in unconditionally.
  *
+ * The two roster-browsing pages (Bảng Xếp Hạng Sức Mạnh, Tier List Nhân Vật)
+ * use `variant="label"` instead — a "Nội tại" text pill with a red frame,
+ * rather than the bare square — since those pages have no other icon row
+ * competing for the same inline space the way the match viewer/lineup
+ * screens do, so a self-explanatory label reads better there than an
+ * unlabeled square would.
+ *
  * A character with several unrelated abilities (e.g. Phan Anh Minh's three)
  * gets one labeled block per distinct ability rather than one run-on
  * paragraph — see PASSIVE_BLOCKS_BY_CHARACTER_ID.
  */
-export function PassiveBadge({ playerId, className = "" }: { playerId: string; className?: string }) {
+export function PassiveBadge({
+  playerId,
+  variant = "icon",
+  className = "",
+}: {
+  playerId: string;
+  variant?: "icon" | "label";
+  className?: string;
+}) {
   const { visible, pos, mobile, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
   const blocks = PASSIVE_BLOCKS_BY_CHARACTER_ID[playerId];
   if (!blocks || blocks.length === 0) return null;
@@ -32,14 +47,27 @@ export function PassiveBadge({ playerId, className = "" }: { playerId: string; c
 
   return (
     <>
-      <button
-        type="button"
-        ref={triggerRef}
-        {...triggerProps}
-        aria-label="Nội tại"
-        title="Nội tại"
-        className={`inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] bg-blood align-middle sm:h-3 sm:w-3 ${className}`}
-      />
+      {variant === "label" ? (
+        <button
+          type="button"
+          ref={triggerRef}
+          {...triggerProps}
+          aria-label="Nội tại"
+          title="Nội tại"
+          className={`display inline-flex shrink-0 items-center rounded border border-blood px-1 py-px text-[9px] leading-tight text-blood align-middle sm:px-1.5 sm:text-[10px] ${className}`}
+        >
+          Nội tại
+        </button>
+      ) : (
+        <button
+          type="button"
+          ref={triggerRef}
+          {...triggerProps}
+          aria-label="Nội tại"
+          title="Nội tại"
+          className={`inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] bg-blood align-middle sm:h-3 sm:w-3 ${className}`}
+        />
+      )}
       {visible &&
         (mobile ? (
           // See PlayerHoverCard's identical branch / useTapReveal's own doc
