@@ -236,16 +236,22 @@ export function BoutResultBoard({
 
       {/* Everything above this row fits the viewport like the rest of the
           app — this row alone is the exception, and even within it, only
-          the log panel scrolls. min-h-0 on the row/column lets THEM shrink
-          below natural content height; the log panel itself instead gets a
-          hard min-h floor (below) rather than min-h-0, so on a viewport
-          that's genuinely too short for everything to fit (seen inside some
-          in-app WebViews, where the truly available height can come in
-          smaller than expected), the log never gets squeezed down to an
-          unreadable sliver — the page falls back to scrolling past that
-          floor instead, via main's own overflow-y-auto. */}
+          the scoreboard column and the log panel scroll, INTERNALLY, each in
+          their own box — never the whole page. min-h-0 all the way down
+          this chain (grid -> each column -> each column's own scrollable
+          child) is what makes that possible: a flex/grid item without it
+          refuses to shrink below its content's natural size no matter how
+          tight the parent's budget is, which is exactly what silently
+          forced `main` itself to grow and scroll past the scoreboard column
+          when it was missing here — the actual bottom-padding-looks-missing
+          bug, not the padding itself. The log panel additionally gets a
+          hard min-h floor (below) rather than relying on min-h-0 alone, so
+          on a viewport that's genuinely too short for everything to fit
+          (seen inside some in-app WebViews), the log never gets squeezed
+          down to an unreadable sliver — the scoreboard column is what gives
+          first at that point instead, via its own overflow-y-auto. */}
       <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-2 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-none lg:gap-6">
-        <div className="flex flex-col gap-2 sm:gap-3">
+        <div className="flex min-h-0 flex-col gap-2 overflow-y-auto sm:gap-3">
           <Scoreboard
             bouts={match.bouts}
             progress={progress}

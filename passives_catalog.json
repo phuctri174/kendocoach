@@ -438,6 +438,21 @@
         "defense.dou": 6,
         "defense.tsuki": 6
       }
+    },
+    {
+      "id": "hoang_minh_chau_self_buff",
+      "character": "Hoàng Minh Châu",
+      "passiveName": "Nhà Vua Làng Sương Mù",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "At bout start, her opponent's Tổng Lực (base seed stats) is higher than her own.",
+      "effects": {
+        "attack_rate": 7,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6
+      }
     }
   ]
 }

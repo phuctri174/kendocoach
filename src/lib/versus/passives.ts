@@ -65,7 +65,13 @@ const ID = {
   lienToan: idOf("Liên Toàn"),
   nhiNhi: idOf("Nhi Nhi"),
   nguyenCaoBichTram: idOf("Nguyễn Cao Bích Trâm"),
+  hoangMinhChau: idOf("Hoàng Minh Châu"),
 } as const;
+
+/** Base-stats lookup — Hoàng Minh Châu's Tổng Lực comparison deliberately
+ *  uses raw seed baseStats, not the effective in-bout Player (same "base
+ *  seed stats" rule Lương Trọng Nhân's teammate check already follows). */
+const PERSON_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p]));
 
 export interface PassiveBlock {
   /** Matches a passiveName in passives_catalog.json — shown highlighted in
@@ -237,6 +243,13 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
     {
       name: "Quái Vật Thiên Tài",
       text: "Nếu thua trận của mình: các đồng đội chưa thi đấu tăng thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
+    },
+  ],
+
+  [ID.hoangMinhChau]: [
+    {
+      name: "Nhà Vua Làng Sương Mù",
+      text: "Đầu mỗi trận đấu, nếu Tổng Lực của đối thủ cao hơn bản thân: tăng chỉ số tấn công và toàn bộ kĩ thuật cho bản thân.",
     },
   ],
 };
@@ -511,6 +524,42 @@ function makeNgoDacSyPhongHook(playerA: Player, playerB: Player): LiveModifierHo
   };
 }
 
+/** B: Hoàng Minh Châu — same shape as Ngô Đắc Sỹ Phong's (compared once at
+ *  bout start, fixed for the whole bout), but comparing Tổng Lực instead of
+ *  defend_rate, using BASE SEED STATS for both sides rather than effective
+ *  pre-bout stats (explicit spec: consistent with how Lương Trọng Nhân's
+ *  passive already does its own Tổng Lực comparison), and self-buff only —
+ *  no effect on the opponent. */
+function makeHoangMinhChauHook(playerA: Player, playerB: Player): LiveModifierHook | undefined {
+  let side: Side;
+  let self: Player;
+  let opponent: Player;
+  if (playerA.id === ID.hoangMinhChau) {
+    side = "A";
+    self = playerA;
+    opponent = playerB;
+  } else if (playerB.id === ID.hoangMinhChau) {
+    side = "B";
+    self = playerB;
+    opponent = playerA;
+  } else {
+    return undefined;
+  }
+  const selfBase = PERSON_BY_ID.get(self.id)?.baseStats;
+  const opponentBase = PERSON_BY_ID.get(opponent.id)?.baseStats;
+  if (!selfBase || !opponentBase) return undefined;
+  if (overallStrength(opponentBase) <= overallStrength(selfBase)) return undefined;
+  const selfBuff = effectsFor("hoang_minh_chau_self_buff");
+  // Fixed for the whole bout (the comparison only ever happens once, at
+  // hook-build time) — announce once, on the first exchange, not every one.
+  let announced = false;
+  return () => {
+    const notes = announced ? undefined : [{ side, text: `${self.name} đã kích hoạt nội tại.` }];
+    announced = true;
+    return side === "A" ? { a: selfBuff, notes } : { b: selfBuff, notes };
+  };
+}
+
 /** C: Phan Anh Minh — team-wide (not just his own bout), live per exchange.
  *  Reuses dan_fighting's exact "behind on the team tally entering this bout
  *  OR behind on ippons within this bout" OR-condition. */
@@ -694,6 +743,7 @@ const LIVE_PASSIVE_CHARACTER_IDS = new Set([
   ID.tranMaiKhanh,
   ID.nguyenPhucDieuAn,
   ID.nguyenCaoBichTram,
+  ID.hoangMinhChau,
 ]);
 
 export function hasLivePassiveCandidates(pickedA: readonly string[], pickedB: readonly string[]): boolean {
@@ -719,6 +769,7 @@ export interface PassiveBoutContext {
 export function buildPassiveHookForBout(ctx: PassiveBoutContext): LiveModifierHook | undefined {
   const hooks: LiveModifierHook[] = [
     makeNgoDacSyPhongHook(ctx.playerA, ctx.playerB),
+    makeHoangMinhChauHook(ctx.playerA, ctx.playerB),
     makePhanAnhMinhTeamHook(ctx.pickedA, ctx.pickedB, ctx.teamAWinsSoFar, ctx.teamBWinsSoFar),
     makeLienToanHook(ctx.playerA, ctx.playerB),
     makeNhiNhiHook(ctx.playerA, ctx.playerB),

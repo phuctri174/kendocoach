@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/lich-su", label: "Lịch Sử Đấu" },
   { href: "/dau-don", label: "Đấu đơn" },
   { href: "/chi-so", label: "Bảng Xếp Hạng Sức Mạnh" },
+  { href: "/bang-xep-hang-nhan-vat", label: "Tier List Nhân Vật" },
 ];
 
 /** Top-level menu. The tournament itself lives at "/". */
