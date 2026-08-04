@@ -21,18 +21,16 @@ export interface EquipDisplay {
 function DetailPopover({
   equip,
   pos,
+  mobile,
   popoverRef,
 }: {
   equip: EquipDisplay;
-  pos: { top: number; left: number };
+  pos: { top: number; left: number } | null;
+  mobile: boolean;
   popoverRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  return createPortal(
-    <div
-      ref={popoverRef}
-      className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 bg-card px-3 py-2 text-left shadow-lg"
-      style={{ top: pos.top, left: pos.left }}
-    >
+  const content = (
+    <>
       <p className="display mb-1 text-xs text-brass-300">{equip.name}</p>
       <p className="text-[11px] text-bone-faint">{equip.description}</p>
       {Object.keys(equip.effects).length > 0 && (
@@ -44,6 +42,34 @@ function DetailPopover({
           ))}
         </ul>
       )}
+    </>
+  );
+
+  // Mobile: centered overlay instead of anchored positioning — see
+  // useTapReveal's own doc comment / PlayerHoverCard's identical branch.
+  if (mobile) {
+    return createPortal(
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-forest-900/70 p-6">
+        <div
+          ref={popoverRef}
+          onClick={(e) => e.stopPropagation()}
+          className="hex-tab w-full max-w-xs flex-col gap-1.5 bg-card px-4 py-3 text-left shadow-lg"
+        >
+          {content}
+        </div>
+      </div>,
+      document.body,
+    );
+  }
+
+  if (!pos) return null;
+  return createPortal(
+    <div
+      ref={popoverRef}
+      className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 bg-card px-3 py-2 text-left shadow-lg"
+      style={{ top: pos.top, left: pos.left }}
+    >
+      {content}
     </div>,
     document.body,
   );
@@ -55,7 +81,7 @@ function DetailPopover({
  *  (desktop bonus), same interaction as PlayerHoverCard rather than a native
  *  title tooltip, which mobile taps can't reliably surface. */
 export function EquipBadge({ equip }: { equip: EquipDisplay }) {
-  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
+  const { visible, pos, mobile, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
   return (
     <>
       <button
@@ -72,7 +98,7 @@ export function EquipBadge({ equip }: { equip: EquipDisplay }) {
         )}
         <span className="truncate">{equip.name}</span>
       </button>
-      {visible && pos && <DetailPopover equip={equip} pos={pos} popoverRef={popoverRef} />}
+      {visible && <DetailPopover equip={equip} pos={pos} mobile={mobile} popoverRef={popoverRef} />}
     </>
   );
 }
@@ -83,7 +109,7 @@ export function EquipBadge({ equip }: { equip: EquipDisplay }) {
  *  position boxes. Tap/click or hover opens the exact same detail popover as
  *  EquipBadge, just from a smaller trigger. */
 export function EquipIcon({ equip }: { equip: EquipDisplay }) {
-  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
+  const { visible, pos, mobile, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
   return (
     <>
       <button
@@ -100,7 +126,7 @@ export function EquipIcon({ equip }: { equip: EquipDisplay }) {
           <span className="text-[9px] text-brass-300 sm:text-[10px]">✦</span>
         )}
       </button>
-      {visible && pos && <DetailPopover equip={equip} pos={pos} popoverRef={popoverRef} />}
+      {visible && <DetailPopover equip={equip} pos={pos} mobile={mobile} popoverRef={popoverRef} />}
     </>
   );
 }

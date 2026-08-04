@@ -489,17 +489,41 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
     );
   }
 
+  // BoutResultBoard renders its own MatchSummary (team names + score, right
+  // below this header) once a game has a result to show — the full 2-line
+  // name/score display here would just be repeating that a few dozen pixels
+  // down, at exactly the moment the position-box grid below is tightest on
+  // vertical budget (see BoutResultBoard's own comment on min-h-0 all the
+  // way down that chain). Collapsing to one compact line here reclaims that
+  // space for the boxes instead of duplicating info MatchSummary already
+  // owns; every other phase (draft/lineup/augment/item) has no MatchSummary
+  // on screen, so it keeps the full prominent display.
+  const showingBoutBoard = !!(game && (game.bout_provisional || game.result));
+
   return (
-    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
+    <section
+      className={`mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center ${
+        showingBoutBoard ? "gap-2 sm:gap-3" : "gap-4 sm:gap-6"
+      }`}
+    >
       <header className="shrink-0 flex flex-col items-center gap-1 text-center">
         <p className="display text-xs text-brass-600">Đấu đối kháng · {match.format === "bo3" ? "Bo3" : "Bo5"}</p>
-        <h2 className="display text-xl text-bone sm:text-2xl">
-          {names?.a ?? "…"} <span className="px-2 text-brass-600">vs</span> {names?.b ?? "…"}
-        </h2>
-        <p className="display text-3xl text-bone">
-          {displaySeriesScore.a} — {displaySeriesScore.b}
-        </p>
-        <p className="text-sm text-bone-faint">Ván {game?.game_number ?? match.current_game_number}</p>
+        {showingBoutBoard ? (
+          <p className="display text-sm text-bone sm:text-base">
+            {names?.a ?? "…"} <span className="px-1 text-brass-600">{displaySeriesScore.a}—{displaySeriesScore.b}</span> {names?.b ?? "…"}
+            <span className="px-1 text-bone-faint">· Ván {game?.game_number ?? match.current_game_number}</span>
+          </p>
+        ) : (
+          <>
+            <h2 className="display text-xl text-bone sm:text-2xl">
+              {names?.a ?? "…"} <span className="px-2 text-brass-600">vs</span> {names?.b ?? "…"}
+            </h2>
+            <p className="display text-3xl text-bone">
+              {displaySeriesScore.a} — {displaySeriesScore.b}
+            </p>
+            <p className="text-sm text-bone-faint">Ván {game?.game_number ?? match.current_game_number}</p>
+          </>
+        )}
         <button
           type="button"
           onClick={async () => {

@@ -66,6 +66,7 @@ const ID = {
   nhiNhi: idOf("Nhi Nhi"),
   nguyenCaoBichTram: idOf("Nguyễn Cao Bích Trâm"),
   hoangMinhChau: idOf("Hoàng Minh Châu"),
+  nguyenHoangMinhTam: idOf("Nguyễn Hoàng Minh Tâm"),
 } as const;
 
 /** Base-stats lookup — Hoàng Minh Châu's Tổng Lực comparison deliberately
@@ -252,6 +253,13 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
       text: "Đầu mỗi trận đấu, nếu Tổng Lực của đối thủ cao hơn bản thân: tăng chỉ số tấn công và toàn bộ kĩ thuật cho bản thân.",
     },
   ],
+
+  [ID.nguyenHoangMinhTam]: [
+    {
+      name: "Độc Hành",
+      text: "Không dựa vào hào quang của bất kỳ ai, cũng chẳng nao núng trước uy thế của đối phương — bước đi một mình trên con đường của riêng mình, không hề bị lay chuyển bởi những gì xảy ra xung quanh.",
+    },
+  ],
 };
 
 /** Anyone with a "Nội tại" entry — drives the small icon beside a name. */
@@ -375,7 +383,16 @@ export function resolvePassiveStaticEffects(ctx: {
 }): Map<string, Effects> {
   const { pickedA, pickedB, lineupA, lineupB, rawPlayersA, rawPlayersB } = ctx;
   const effects = new Map<string, Effects>();
-  const add = (id: string, delta: Effects) => effects.set(id, merge(effects.get(id) ?? {}, delta));
+  // Nguyễn Hoàng Minh Tâm's "Độc Hành" — immune to every OTHER character's
+  // passive, buff or debuff alike (his own entry has no stat effect, so
+  // there's nothing of his own this would ever block). Gating the single
+  // `add` chokepoint every static passive routes through, rather than
+  // special-casing each one above, is what makes this apply uniformly and
+  // stay correct as new passives get added later.
+  const add = (id: string, delta: Effects) => {
+    if (id === ID.nguyenHoangMinhTam) return;
+    effects.set(id, merge(effects.get(id) ?? {}, delta));
+  };
 
   const inA = (id: string) => pickedA.includes(id);
   const inB = (id: string) => pickedB.includes(id);
@@ -777,13 +794,23 @@ export function buildPassiveHookForBout(ctx: PassiveBoutContext): LiveModifierHo
   ].filter((h): h is LiveModifierHook => !!h);
 
   if (hooks.length === 0) return undefined;
+  // Same "Độc Hành" immunity as the static chokepoint above (resolvePassiveStaticEffects's
+  // `add`), applied to every live category (B-F) at once: whichever of this
+  // bout's two combatants is Nguyễn Hoàng Minh Tâm has that side's contribution
+  // dropped after every hook has already run, regardless of which specific
+  // passive produced it or whether it would have helped or hurt him — this
+  // covers Ngô Đắc Sỹ Phong/Hoàng Minh Châu's own-bout hooks, Phan Anh Minh's
+  // team-wide buff, Liên Toàn's mutual Jodan hit, Nhi Nhi's phase swings, and
+  // cross-bout carry-forward, without special-casing any of them individually.
+  const immuneA = ctx.playerA.id === ID.nguyenHoangMinhTam;
+  const immuneB = ctx.playerB.id === ID.nguyenHoangMinhTam;
   return (state) => {
     const results = hooks
       .map((h) => h(state))
       .filter((r): r is { a?: Effects; b?: Effects; notes?: { side: Side; text: string }[] } => !!r);
     if (results.length === 0) return undefined;
-    const aParts = results.map((r) => r.a).filter((x): x is Effects => !!x);
-    const bParts = results.map((r) => r.b).filter((x): x is Effects => !!x);
+    const aParts = immuneA ? [] : results.map((r) => r.a).filter((x): x is Effects => !!x);
+    const bParts = immuneB ? [] : results.map((r) => r.b).filter((x): x is Effects => !!x);
     const notes = results.flatMap((r) => r.notes ?? []);
     return {
       a: aParts.length ? merge(...aParts) : undefined,

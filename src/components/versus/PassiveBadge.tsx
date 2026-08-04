@@ -19,9 +19,16 @@ import { PASSIVE_BLOCKS_BY_CHARACTER_ID } from "@/lib/versus/passives";
  * paragraph — see PASSIVE_BLOCKS_BY_CHARACTER_ID.
  */
 export function PassiveBadge({ playerId, className = "" }: { playerId: string; className?: string }) {
-  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
+  const { visible, pos, mobile, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
   const blocks = PASSIVE_BLOCKS_BY_CHARACTER_ID[playerId];
   if (!blocks || blocks.length === 0) return null;
+
+  const content = blocks.map((block, idx) => (
+    <div key={block.name} className={idx > 0 ? "border-t border-brass-600/20 pt-2" : ""}>
+      <p className="display mb-1 text-xs text-blood">{block.name}</p>
+      <p className="text-[11px] text-bone-faint">{block.text}</p>
+    </div>
+  ));
 
   return (
     <>
@@ -34,22 +41,34 @@ export function PassiveBadge({ playerId, className = "" }: { playerId: string; c
         className={`inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] bg-blood align-middle sm:h-3 sm:w-3 ${className}`}
       />
       {visible &&
-        pos &&
-        createPortal(
-          <div
-            ref={popoverRef}
-            className="hex-tab pointer-events-none fixed z-50 w-64 -translate-x-1/2 flex-col gap-2 bg-card px-3 py-2 text-left shadow-lg"
-            style={{ top: pos.top, left: pos.left }}
-          >
-            {blocks.map((block, idx) => (
-              <div key={block.name} className={idx > 0 ? "border-t border-brass-600/20 pt-2" : ""}>
-                <p className="display mb-1 text-xs text-blood">{block.name}</p>
-                <p className="text-[11px] text-bone-faint">{block.text}</p>
+        (mobile ? (
+          // See PlayerHoverCard's identical branch / useTapReveal's own doc
+          // comment — anchored positioning is desktop-only now.
+          createPortal(
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-forest-900/70 p-6">
+              <div
+                ref={popoverRef}
+                onClick={(e) => e.stopPropagation()}
+                className="hex-tab w-full max-w-xs flex-col gap-2 bg-card px-4 py-3 text-left shadow-lg"
+              >
+                {content}
               </div>
-            ))}
-          </div>,
-          document.body,
-        )}
+            </div>,
+            document.body,
+          )
+        ) : (
+          pos &&
+          createPortal(
+            <div
+              ref={popoverRef}
+              className="hex-tab pointer-events-none fixed z-50 w-64 -translate-x-1/2 flex-col gap-2 bg-card px-3 py-2 text-left shadow-lg"
+              style={{ top: pos.top, left: pos.left }}
+            >
+              {content}
+            </div>,
+            document.body,
+          )
+        ))}
     </>
   );
 }

@@ -47,7 +47,7 @@ export function PlayerHoverCard({
   liveBonus?: Partial<Record<StatPath, number>>;
   className?: string;
 }) {
-  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLSpanElement>();
+  const { visible, pos, mobile, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLSpanElement>();
 
   const rows = STAT_PATHS.map((path) => ({
     path,
@@ -57,6 +57,35 @@ export function PlayerHoverCard({
   }));
   const netTotal = rows.reduce((sum, r) => sum + r.delta, 0);
   const netTone = netTotal > 0 ? "text-forest-500" : netTotal < 0 ? "text-blood" : "text-bone-faint";
+
+  const content = (
+    <>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <p className="display text-xs text-brass-600">{name}</p>
+        <p className={`display text-xs tabular-nums ${netTone}`}>
+          {netTotal > 0 ? "+" : ""}
+          {netTotal}
+        </p>
+      </div>
+      <dl className="flex flex-col gap-0.5">
+        {rows.map((r) => (
+          <div key={r.path} className="flex items-center justify-between gap-2 text-[11px]">
+            <dt className="text-bone-faint">{r.label}</dt>
+            <dd className="tabular-nums text-bone">
+              {r.baseValue}
+              {r.delta !== 0 && (
+                <span className={r.delta > 0 ? "text-forest-500" : "text-blood"}>
+                  {" "}
+                  {r.delta > 0 ? "+" : ""}
+                  {r.delta}
+                </span>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </>
+  );
 
   return (
     <>
@@ -69,40 +98,41 @@ export function PlayerHoverCard({
         {name}
       </span>
       {visible &&
-        pos &&
-        createPortal(
-          <div
-            ref={popoverRef}
-            className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 bg-card px-3 py-2 text-left shadow-lg"
-            style={{ top: pos.top, left: pos.left }}
-          >
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <p className="display text-xs text-brass-600">{name}</p>
-              <p className={`display text-xs tabular-nums ${netTone}`}>
-                {netTotal > 0 ? "+" : ""}
-                {netTotal}
-              </p>
-            </div>
-            <dl className="flex flex-col gap-0.5">
-              {rows.map((r) => (
-                <div key={r.path} className="flex items-center justify-between gap-2 text-[11px]">
-                  <dt className="text-bone-faint">{r.label}</dt>
-                  <dd className="tabular-nums text-bone">
-                    {r.baseValue}
-                    {r.delta !== 0 && (
-                      <span className={r.delta > 0 ? "text-forest-500" : "text-blood"}>
-                        {" "}
-                        {r.delta > 0 ? "+" : ""}
-                        {r.delta}
-                      </span>
-                    )}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>,
-          document.body,
-        )}
+        (mobile ? (
+          // Mobile: a trigger-anchored popover has no reliable way to stay
+          // fully on-screen regardless of which position box was tapped —
+          // see useTapReveal's own doc comment. Centered overlay instead,
+          // so it's correct by construction rather than by edge-case math.
+          createPortal(
+            // No onClick here to dismiss — the click just bubbles to
+            // `document`, where useTapReveal's own outside-click listener
+            // already tears it down (that listener is exactly why the inner
+            // card below needs stopPropagation, not why the backdrop needs
+            // its own handler).
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-forest-900/70 p-6">
+              <div
+                ref={popoverRef}
+                onClick={(e) => e.stopPropagation()}
+                className="hex-tab w-full max-w-xs flex-col gap-1.5 bg-card px-4 py-3 text-left shadow-lg"
+              >
+                {content}
+              </div>
+            </div>,
+            document.body,
+          )
+        ) : (
+          pos &&
+          createPortal(
+            <div
+              ref={popoverRef}
+              className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 bg-card px-3 py-2 text-left shadow-lg"
+              style={{ top: pos.top, left: pos.left }}
+            >
+              {content}
+            </div>,
+            document.body,
+          )
+        ))}
     </>
   );
 }

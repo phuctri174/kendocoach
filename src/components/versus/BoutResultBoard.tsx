@@ -459,7 +459,7 @@ function MatchSummary({
 
   return (
     <HexPanel cut={14}>
-      <div className="flex items-center justify-between gap-3 px-4 py-1.5 sm:px-6 sm:py-3">
+      <div className="flex items-center justify-between gap-3 px-4 py-1.5 sm:px-6 sm:py-2 lg:py-1.5">
         <TeamTally name={teamAName} wins={latestScore.a} ippons={ippons.a} align="left" augments={augmentsA} />
         <span className="display shrink-0 text-xs text-brass-600 sm:text-sm">—</span>
         <TeamTally name={teamBName} wins={latestScore.b} ippons={ippons.b} align="right" augments={augmentsB} />
@@ -587,7 +587,7 @@ function Scoreboard({
   bonusByPlayer: Record<string, Partial<Record<StatPath, number>>>;
 }) {
   return (
-    <ol className="flex flex-col gap-1 sm:gap-2">
+    <ol className="flex flex-col gap-1 sm:gap-1.5 lg:gap-1">
       {bouts.map((bout, row) => {
         const through = showAll ? bout.exchanges.length : (progress.get(bout.id) ?? -1);
         const started = through >= 0;
@@ -766,7 +766,7 @@ function SideBlock({
       bodyClassName={started ? "bg-card" : "bg-paper-dim"}
     >
       <div
-        className={`flex h-full min-w-0 flex-col gap-0.5 px-2 py-0.5 sm:gap-1 sm:px-3 sm:py-2 ${
+        className={`flex h-full min-w-0 flex-col gap-0.5 px-2 py-0.5 sm:gap-1 sm:px-3 sm:py-1.5 lg:gap-0.5 lg:px-2 lg:py-0.5 ${
           mirrored ? "items-end text-right" : "items-start text-left"
         }`}
       >
@@ -774,18 +774,24 @@ function SideBlock({
           <span className="display shrink-0 text-[10px] text-brass-600 sm:text-[11px]">{index}</span>
           {base ? (
             <PlayerHoverCard
-              className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm"
+              className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm lg:text-[13px]"
               name={player.name}
               base={base}
               bonus={bonusByPlayer[player.id] ?? {}}
               liveBonus={liveBonus}
             />
           ) : (
-            <span className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm">{player.name}</span>
+            <span className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm lg:text-[13px]">{player.name}</span>
           )}
           <PassiveBadge playerId={player.id} />
         </div>
-        <div className={`flex min-h-4 flex-wrap items-center gap-1 sm:min-h-6 ${mirrored ? "justify-end" : ""}`}>
+        {/* min-h keeps a blank row from collapsing when there are no marks
+            yet (started=false) — but once the equal-height-forced lg: grid
+            row is this tight on budget (see the grid's own comment further
+            up this file), that reserved height is exactly what pushes the
+            box over, so lg: drops back to the same compact floor mobile/
+            tablet already uses instead of sm:'s roomier one. */}
+        <div className={`flex min-h-4 flex-wrap items-center gap-1 sm:min-h-5 lg:min-h-4 ${mirrored ? "justify-end" : ""}`}>
           {badges.map((b, idx) => (
             <EquipIcon key={idx} equip={b} />
           ))}
@@ -795,7 +801,7 @@ function SideBlock({
             marks.map((mark, i) => (
               <span
                 key={i}
-                className={`display flex h-4 w-4 items-center justify-center text-[10px] sm:h-5 sm:w-5 sm:text-[11px] ${
+                className={`display flex h-4 w-4 items-center justify-center text-[10px] sm:h-5 sm:w-5 sm:text-[11px] lg:h-4 lg:w-4 lg:text-[10px] ${
                   mark.kind === "hansoku" ? "bg-blood/80 text-paper" : "bg-brass-400 text-forest-900"
                 }`}
                 title={mark.kind === "hansoku" ? "Hansoku" : "Ippon"}
