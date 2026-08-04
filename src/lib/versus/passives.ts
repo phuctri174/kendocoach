@@ -94,7 +94,7 @@ export interface PassiveBlock {
 export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
   [ID.dangKieuDiem]: [
     {
-      name: "Bản Lĩnh Nữ Hoàng",
+      name: "Bản Lĩnh Siêu Sao",
       text: "Nếu được xếp ở vị trí Taisho: tăng toàn bộ chỉ số (tấn công, phòng thủ, kĩ thuật, phòng thủ kĩ thuật, thể lực) và giảm tỉ lệ phạm luật cho bản thân.",
     },
     {
