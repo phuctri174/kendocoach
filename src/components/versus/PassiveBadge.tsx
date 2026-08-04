@@ -17,9 +17,10 @@ import { PASSIVE_BLOCKS_BY_CHARACTER_ID } from "@/lib/versus/passives";
  * The two roster-browsing pages (Bảng Xếp Hạng Sức Mạnh, Tier List Nhân Vật)
  * use `variant="label"` instead — a "Nội tại" text pill with a red frame,
  * rather than the bare square — since those pages have no other icon row
- * competing for the same inline space the way the match viewer/lineup
- * screens do, so a self-explanatory label reads better there than an
- * unlabeled square would.
+ * competing for the same space the way the match viewer/lineup screens do,
+ * so a self-explanatory label reads better there than an unlabeled square
+ * would. Bảng Xếp Hạng Sức Mạnh stacks the label below the name (its cards
+ * are narrow and names get truncated) rather than placing it inline.
  *
  * A character with several unrelated abilities (e.g. Phan Anh Minh's three)
  * gets one labeled block per distinct ability rather than one run-on

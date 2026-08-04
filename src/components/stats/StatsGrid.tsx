@@ -224,7 +224,7 @@ export function StatsGrid({ rows }: { rows: KendokaRow[] }) {
           Không tìm thấy kendoka nào khớp “{query}”.
         </p>
       ) : (
-        <ol className="grid grid-cols-3 gap-2.5 sm:gap-4 xl:grid-cols-4">
+        <ol className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-3 xl:grid-cols-4">
           {sorted.map((row, i) => (
             <li key={row.id}>
               <KendokaCard
@@ -259,17 +259,17 @@ function KendokaCard({
   return (
     <HexPanel className="h-full" cut={16}>
       <div className="flex h-full flex-col gap-1.5 px-2.5 py-2.5 sm:gap-3 sm:px-4 sm:py-4">
-        <header className="flex items-start justify-between gap-1.5 border-b border-brass-600/25 pb-1.5 sm:gap-2 sm:pb-2">
+        <header className="flex flex-col gap-0.5 border-b border-brass-600/25 pb-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-2 sm:pb-2">
           <div className="min-w-0">
-            <h2 className="display flex min-w-0 items-baseline gap-1 text-[13px] leading-tight text-bone sm:text-base">
-              <span className="min-w-0 truncate">{row.name}</span>
-              <PassiveBadge playerId={row.id} variant="label" />
+            <h2 className="display truncate text-[13px] leading-tight text-bone sm:text-base">
+              {row.name}
             </h2>
+            <PassiveBadge playerId={row.id} variant="label" className="mt-0.5" />
             {row.styles.length > 1 && (
               <p className="text-[9px] text-brass-600 sm:text-[11px]">Có thể: {row.styles.join(", ")}</p>
             )}
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-0.5">
+          <div className="flex shrink-0 items-center gap-1.5 sm:flex-col sm:items-end sm:gap-0.5">
             {rank !== null && (
               <span className="display text-[9px] text-bone-faint sm:text-[11px]">#{rank}</span>
             )}
@@ -289,8 +289,8 @@ function KendokaCard({
         {GROUPS.map((group) => (
           <section key={group.label} className="flex flex-col gap-0.5 sm:gap-1">
             <h3 className="display text-[9px] text-brass-600 sm:text-[10px]">{group.label}</h3>
-            {/* One stat per row below sm: at 2-3 cards per mobile row a card
-                is only ~110-175px wide, so a 2-up internal grid would leave
+            {/* One stat per row below sm: at 2 cards per mobile row a card
+                is only ~170-220px wide, so a 2-up internal grid would leave
                 each stat cell too narrow for its label + value + bar to read
                 at a glance. */}
             <dl className="grid grid-cols-1 gap-x-2 gap-y-0.5 sm:grid-cols-2 sm:gap-x-3 sm:gap-y-1">
