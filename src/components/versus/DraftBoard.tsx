@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { HexPanel } from "@/components/Hex";
 import { CLUB_ROSTER } from "@/data/club";
 import { currentTurnSide, TURN_SECONDS, type DraftState, type MatchGameRow } from "@/lib/versus/draft";
+import { PassiveBadge } from "@/components/versus/PassiveBadge";
 
 const NAME_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p.name]));
 
@@ -96,7 +97,7 @@ export function DraftBoard({
 
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-5 sm:gap-3">
         {draftState.pool.map((candidateId) => (
-          <li key={candidateId}>
+          <li key={candidateId} className="flex flex-col items-center">
             <button
               type="button"
               onClick={() => pick(candidateId)}
@@ -105,6 +106,7 @@ export function DraftBoard({
             >
               <span className="display">{NAME_BY_ID.get(candidateId) ?? candidateId}</span>
             </button>
+            <PassiveBadge playerId={candidateId} />
           </li>
         ))}
       </ul>
@@ -129,6 +131,7 @@ function RosterColumn({ label, picked }: { label: string; picked: string[] }) {
           {Array.from({ length: 5 }, (_, i) => picked[i]).map((id, i) => (
             <li key={i} className="truncate text-sm text-bone">
               {id ? (NAME_BY_ID.get(id) ?? id) : <span className="text-bone-faint">—</span>}
+              {id && <PassiveBadge playerId={id} />}
             </li>
           ))}
         </ol>

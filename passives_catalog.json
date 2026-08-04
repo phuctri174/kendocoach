@@ -1,0 +1,413 @@
+{
+  "_note": "Character passive ('Nội tại') numeric effects — hand-edit freely. Trigger LOGIC (position checks, same-team/opposing detection, live per-exchange hooks, carry-forward win/loss/draw conditions, Nhi Nhi's re-roll timing) lives in code (src/lib/versus/passives.ts) and is NOT here; this file only holds the stat deltas each named entry contributes. Every entry is deliberately its own standalone block, even where two entries' numbers currently match — nothing here is shared/reused across entries, so tuning one never silently changes another. Field guide: `character` is whose passive this clause conceptually belongs to; `appliesTo` says who actually RECEIVES the effect (their own name if it's literally a different character, e.g. a partner's share of a pairing bonus, or a role like 'his same-position opponent' / 'not-yet-played teammates' when the recipient is determined dynamically at resolve time); `context` labels the relationship driving it (self / same_team / opposing / opponent / team / teammates); `condition` is a short human description of the trigger, kept in sync with the real logic in passives.ts by hand. For the pairing characters with multiple entries (Lương Trọng Nhân & Đặng Kiều Diễm; Phan Anh Minh & Nguyễn Kiều Hồng Nhung; Trần Mai Khánh & Tạ Đức Thiện; Phan Anh Minh & Phan Phúc Lâm; Nguyễn Trung Tín & Nguyễn Phúc Diệu An), each character's own same_team vs opposing vs partner-share entry is listed separately right next to its counterpart below — read `character` + `context` together to tell them apart.",
+  "passives": [
+    {
+      "id": "dang_kieu_diem_taisho",
+      "character": "Đặng Kiều Diễm",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "Positioned at Taisho this game.",
+      "effects": {
+        "attack_rate": 4,
+        "defend_rate": 4,
+        "stamina": 4,
+        "hansoku_rate": -6,
+        "technique.men": 4,
+        "technique.kote": 4,
+        "technique.dou": 4,
+        "technique.tsuki": 4,
+        "defense.men": 4,
+        "defense.kote": 4,
+        "defense.dou": 4,
+        "defense.tsuki": 4
+      }
+    },
+    {
+      "id": "ka_nguyet_senpo",
+      "character": "Ka Nguyệt",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "Positioned at Senpo this game.",
+      "effects": {
+        "attack_rate": 7,
+        "technique.men": 7,
+        "technique.dou": 7
+      }
+    },
+    {
+      "id": "tran_thuy_bao_nhu_opponent_debuff",
+      "character": "Trần Thụy Bảo Như",
+      "appliesTo": "her same-position opponent",
+      "context": "opponent",
+      "condition": "She is positioned at Chuken or Taisho this game.",
+      "effects": {
+        "stamina": -6,
+        "defend_rate": -6,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6
+      }
+    },
+    {
+      "id": "phan_anh_minh_same_team_phan_phuc_lam",
+      "character": "Phan Anh Minh",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Phan Phúc Lâm.",
+      "effects": {
+        "defend_rate": 6,
+        "defense.men": 6,
+        "defense.kote": 6,
+        "defense.dou": 6,
+        "defense.tsuki": 6
+      }
+    },
+    {
+      "id": "phan_phuc_lam_same_team_phan_anh_minh",
+      "character": "Phan Phúc Lâm",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Phan Anh Minh.",
+      "effects": {
+        "defend_rate": 6,
+        "defense.men": 6,
+        "defense.kote": 6,
+        "defense.dou": 6,
+        "defense.tsuki": 6
+      }
+    },
+    {
+      "id": "nguyen_trung_tin_same_team_nguyen_phuc_dieu_an",
+      "character": "Nguyễn Trung Tín",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Nguyễn Phúc Diệu An.",
+      "effects": {
+        "attack_rate": 4,
+        "defend_rate": 4,
+        "stamina": 4,
+        "hansoku_rate": 6,
+        "technique.men": 4,
+        "technique.kote": 4,
+        "technique.dou": 4,
+        "technique.tsuki": 4,
+        "defense.men": 4,
+        "defense.kote": 4,
+        "defense.dou": 4,
+        "defense.tsuki": 4
+      }
+    },
+    {
+      "id": "nguyen_phuc_dieu_an_same_team_nguyen_trung_tin",
+      "character": "Nguyễn Phúc Diệu An",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Nguyễn Trung Tín.",
+      "effects": {
+        "attack_rate": 4,
+        "defend_rate": 4,
+        "stamina": 4,
+        "hansoku_rate": 6,
+        "technique.men": 4,
+        "technique.kote": 4,
+        "technique.dou": 4,
+        "technique.tsuki": 4,
+        "defense.men": 4,
+        "defense.kote": 4,
+        "defense.dou": 4,
+        "defense.tsuki": 4
+      }
+    },
+    {
+      "id": "luong_trong_nhan_teammate_buff",
+      "character": "Lương Trọng Nhân",
+      "appliesTo": "each teammate whose Tổng Lực (base seed stats) is lower than his",
+      "context": "teammates",
+      "condition": "Per qualifying teammate, evaluated once lineups lock in.",
+      "effects": {
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6
+      }
+    },
+    {
+      "id": "luong_trong_nhan_same_team_dang_kieu_diem",
+      "character": "Lương Trọng Nhân",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Đặng Kiều Diễm — his share of the shared same-team bonus.",
+      "effects": {
+        "attack_rate": 7
+      }
+    },
+    {
+      "id": "luong_trong_nhan_opposing_dang_kieu_diem",
+      "character": "Lương Trọng Nhân",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Opposing Đặng Kiều Diễm.",
+      "effects": {
+        "defend_rate": -8
+      }
+    },
+    {
+      "id": "dang_kieu_diem_same_team_luong_trong_nhan",
+      "character": "Đặng Kiều Diễm",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Lương Trọng Nhân — her share of the shared same-team bonus (stacks with dang_kieu_diem_luong_trong_nhan_present below).",
+      "effects": {
+        "attack_rate": 7
+      }
+    },
+    {
+      "id": "dang_kieu_diem_luong_trong_nhan_present",
+      "character": "Đặng Kiều Diễm",
+      "appliesTo": "self",
+      "context": "opponent_or_teammate_present",
+      "condition": "Lương Trọng Nhân is anywhere in the match, either side — fires unconditionally on top of the same-team-only bonus above.",
+      "effects": {
+        "attack_rate": 8
+      }
+    },
+    {
+      "id": "phan_anh_minh_same_team_nguyen_kieu_hong_nhung",
+      "character": "Phan Anh Minh",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Nguyễn Kiều Hồng Nhung.",
+      "effects": {
+        "stamina": 8,
+        "hansoku_rate": -6
+      }
+    },
+    {
+      "id": "nguyen_kieu_hong_nhung_same_team_phan_anh_minh",
+      "character": "Nguyễn Kiều Hồng Nhung",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Phan Anh Minh.",
+      "effects": {
+        "stamina": 8,
+        "hansoku_rate": -6
+      }
+    },
+    {
+      "id": "phan_anh_minh_opposing_nguyen_kieu_hong_nhung",
+      "character": "Phan Anh Minh",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Opposing Nguyễn Kiều Hồng Nhung.",
+      "effects": {
+        "attack_rate": -8
+      }
+    },
+    {
+      "id": "nguyen_kieu_hong_nhung_opposing_phan_anh_minh",
+      "character": "Nguyễn Kiều Hồng Nhung",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Opposing Phan Anh Minh.",
+      "effects": {
+        "attack_rate": 7,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6
+      }
+    },
+    {
+      "id": "tran_mai_khanh_same_team_ta_duc_thien",
+      "character": "Trần Mai Khánh",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Tạ Đức Thiện.",
+      "effects": {
+        "attack_rate": 7,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6
+      }
+    },
+    {
+      "id": "ta_duc_thien_same_team_tran_mai_khanh",
+      "character": "Tạ Đức Thiện",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Same team as Trần Mai Khánh.",
+      "effects": {
+        "attack_rate": 7,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6
+      }
+    },
+    {
+      "id": "tran_mai_khanh_opposing_ta_duc_thien",
+      "character": "Trần Mai Khánh",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Opposing Tạ Đức Thiện.",
+      "effects": {
+        "attack_rate": -7,
+        "technique.men": -6,
+        "technique.kote": -6,
+        "technique.dou": -6,
+        "technique.tsuki": -6
+      }
+    },
+    {
+      "id": "ta_duc_thien_opposing_tran_mai_khanh",
+      "character": "Tạ Đức Thiện",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Opposing Trần Mai Khánh.",
+      "effects": {
+        "defend_rate": -7,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6
+      }
+    },
+    {
+      "id": "ngo_dac_sy_phong_self_buff",
+      "character": "Ngô Đắc Sỹ Phong",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "At bout start, his opponent's defend_rate is higher than his own (effective pre-bout stats).",
+      "effects": {
+        "attack_rate": 8
+      }
+    },
+    {
+      "id": "ngo_dac_sy_phong_opponent_debuff",
+      "character": "Ngô Đắc Sỹ Phong",
+      "appliesTo": "his bout opponent",
+      "context": "opponent",
+      "condition": "Same trigger as ngo_dac_sy_phong_self_buff.",
+      "effects": {
+        "defend_rate": -6,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6
+      }
+    },
+    {
+      "id": "phan_anh_minh_team_behind_buff",
+      "character": "Phan Anh Minh",
+      "appliesTo": "his whole team, whoever is currently fighting",
+      "context": "team",
+      "condition": "His team is behind on the game's bout-win tally entering the current bout, OR behind on ippons within the current bout (re-checked live every exchange).",
+      "effects": {
+        "attack_rate": 8,
+        "stamina": 8
+      }
+    },
+    {
+      "id": "lien_toan_self_jodan",
+      "character": "Liên Toàn",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "Currently holding Jodan stance (live, re-checked every exchange).",
+      "effects": {
+        "technique.men": 7,
+        "technique.kote": 7,
+        "defend_rate": -8
+      }
+    },
+    {
+      "id": "lien_toan_opponent_jodan",
+      "character": "Liên Toàn",
+      "appliesTo": "his bout opponent",
+      "context": "opponent",
+      "condition": "Same trigger as lien_toan_self_jodan.",
+      "effects": {
+        "defend_rate": -8
+      }
+    },
+    {
+      "id": "nhi_nhi_excited",
+      "character": "Nhi Nhi",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "\"Hưng phấn\" state — 70% odds at bout start, 50/50 on every re-roll after that (every ippon, either side).",
+      "effects": {
+        "attack_rate": 4,
+        "defend_rate": 4,
+        "stamina": 4,
+        "technique.men": 4,
+        "technique.kote": 4,
+        "technique.dou": 4,
+        "technique.tsuki": 4,
+        "defense.men": 4,
+        "defense.kote": 4,
+        "defense.dou": 4,
+        "defense.tsuki": 4
+      }
+    },
+    {
+      "id": "nhi_nhi_exhausted",
+      "character": "Nhi Nhi",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "\"Kiệt sức\" state — the other side of the same roll as nhi_nhi_excited.",
+      "effects": {
+        "defend_rate": -6,
+        "stamina": -6,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6
+      }
+    },
+    {
+      "id": "tran_mai_khanh_win_carryforward",
+      "character": "Trần Mai Khánh",
+      "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
+      "context": "teammates",
+      "condition": "She wins her own individual bout. Never applies to the daihyosen tiebreak.",
+      "effects": {
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6,
+        "stamina": 6
+      }
+    },
+    {
+      "id": "nguyen_phuc_dieu_an_win_or_draw_carryforward",
+      "character": "Nguyễn Phúc Diệu An",
+      "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
+      "context": "teammates",
+      "condition": "She wins OR draws her own individual bout. Never applies to the daihyosen tiebreak.",
+      "effects": {
+        "attack_rate": 7,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6
+      }
+    },
+    {
+      "id": "nguyen_cao_bich_tram_loss_carryforward",
+      "character": "Nguyễn Cao Bích Trâm",
+      "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
+      "context": "teammates",
+      "condition": "She loses her own individual bout. Never applies to the daihyosen tiebreak.",
+      "effects": {
+        "stamina": 6,
+        "defend_rate": 6,
+        "defense.men": 6,
+        "defense.kote": 6,
+        "defense.dou": 6,
+        "defense.tsuki": 6
+      }
+    }
+  ]
+}

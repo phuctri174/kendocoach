@@ -80,6 +80,8 @@ export function MatchHistoryDetail({
         itemEquipsB={entry.itemEquipsB}
         basePlayerById={entry.basePlayerById}
         bonusByPlayer={entry.bonusByPlayer}
+        rosterANames={entry.match.teamA.roster.map((p) => p.name)}
+        rosterBNames={entry.match.teamB.roster.map((p) => p.name)}
         seriesDecided
         onContinue={noop}
         replay

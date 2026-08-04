@@ -233,6 +233,10 @@ function narrateBout(bout: Bout, ctx: Ctx): void {
         text: phrase(who),
       });
     }
+
+    for (const note of exchange.passiveEvents ?? []) {
+      ctx.push({ ...at, kind: "passive", side: note.side, text: note.text });
+    }
   }
 
   const { winner, ipponsA, ipponsB } = bout.result;

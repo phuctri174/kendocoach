@@ -28,6 +28,7 @@
  */
 
 import type { AugmentTier } from "./augments";
+import { passiveHolderCapExclusions } from "./passives";
 import type { Bout, Lineup, MatchLogEvent, TeamMatch } from "@/lib/kendo/types";
 
 export type Phase = 1 | 2 | 3;
@@ -172,11 +173,15 @@ export function initialDraftState(
   firstPicker: DraftSide = "A",
   seriesExcluded: readonly string[] = [],
 ): DraftState {
+  // pickedA/B are always empty at this point (a fresh draft), so
+  // passiveHolderCapExclusions is a guaranteed no-op here — included only
+  // for parity with applyPick's own phase-transition roll below.
+  const excluded = new Set([...seriesExcluded, ...passiveHolderCapExclusions([], [])]);
   return {
     phase: 1,
     turnIndex: 0,
     picksRemainingInTurn: PHASE_TURNS[1][0].count,
-    pool: rollPool(allIds, new Set(seriesExcluded)),
+    pool: rollPool(allIds, excluded),
     pickedA: [],
     pickedB: [],
     turnDeadline: turnDeadline(),
@@ -219,7 +224,12 @@ export function applyPick(state: DraftState, side: DraftSide, candidateId: strin
 
   if (phase < 3) {
     const nextPhase = (phase + 1) as Phase;
-    const drafted = new Set([...pickedA, ...pickedB, ...state.seriesExcluded]);
+    const drafted = new Set([
+      ...pickedA,
+      ...pickedB,
+      ...state.seriesExcluded,
+      ...passiveHolderCapExclusions(pickedA, pickedB),
+    ]);
     return {
       phase: nextPhase,
       turnIndex: 0,

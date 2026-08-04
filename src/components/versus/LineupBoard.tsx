@@ -10,6 +10,7 @@ import type { DraftSide, ItemEquip, MatchGameRow } from "@/lib/versus/draft";
 import { DndBoard, DraggableCard, DropZone } from "@/components/versus/dnd";
 import { EquipBadge, type EquipDisplay } from "@/components/versus/EquipBadge";
 import { PlayerHoverCard } from "@/components/versus/PlayerHoverCard";
+import { PassiveBadge } from "@/components/versus/PassiveBadge";
 
 const NAME_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p.name]));
 const ITEM_BY_ID = new Map(ITEM_CATALOG.map((i) => [i.id, i]));
@@ -191,6 +192,7 @@ export function LineupBoard({
                     ) : (
                       <span className="display text-xs text-bone sm:text-base">{NAME_BY_ID.get(playerId) ?? playerId}</span>
                     )}
+                    <PassiveBadge playerId={playerId} />
                     <div className="flex flex-wrap justify-center gap-0.5">
                       {badgesFor(playerId, equipped).map((b, idx) => (
                         <EquipBadge key={idx} equip={b} />
@@ -253,6 +255,7 @@ export function LineupBoard({
                         ) : (
                           <span className="display text-xs text-bone sm:text-base">{NAME_BY_ID.get(playerId) ?? playerId}</span>
                         )}
+                        <PassiveBadge playerId={playerId} />
                         <div className="flex flex-wrap justify-center gap-0.5">
                           {augmentBadges.map((b, idx) => (
                             <EquipBadge key={`aug-${idx}`} equip={b} />
@@ -347,7 +350,10 @@ function OpponentRosterList({ roster }: { roster: string[] }) {
   return (
     <ul className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-0.5 text-xs text-bone-dim">
       {roster.map((playerId) => (
-        <li key={playerId}>{NAME_BY_ID.get(playerId) ?? playerId}</li>
+        <li key={playerId} className="flex items-center gap-1">
+          {NAME_BY_ID.get(playerId) ?? playerId}
+          <PassiveBadge playerId={playerId} />
+        </li>
       ))}
     </ul>
   );

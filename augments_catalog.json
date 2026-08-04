@@ -96,7 +96,7 @@
     "tier": "Kyu",
     "description": "Tăng Thể Lực và tỉ lệ ra đòn Men cho cả 5 thành viên trong đội.",
     "effects": {
-      "stamina": 12,
+      "stamina": 15,
       "technique.men": 10
     }
   },
@@ -104,7 +104,7 @@
     "id": "kyu_push",
     "name": "LAO LÊN!!!",
     "tier": "Kyu",
-    "description": "Tăng tỉ lệ tấn công và giảm tỉ lệ phạm luật (hansoku) cho cả 5 thành viên ngẫu nhiên trong đội.",
+    "description": "Tăng tỉ lệ tấn công và giảm tỉ lệ phạm luật (hansoku) cho cả 5 thành viên trong đội.",
     "effects": {
       "attack_rate": 20,
       "hansoku_rate": -10
@@ -124,9 +124,10 @@
     "id": "kyu_capulus",
     "name": "Capulus Coffee",
     "tier": "Kyu",
-    "description": "Giảm tỉ lệ phạm luật (hansoku) và tăng tỉ lệ phòng thủ các kĩ thuật cho cả 5 thành viên trong đội khi có Võ Nguyệt Đức trong đội.",
+    "description": "Giảm tỉ lệ phạm luật (hansoku) và tăng chỉ số phòng thủ và phòng thủ kĩ thuật cho cả 5 thành viên trong đội khi có Võ Nguyệt Đức trong đội.",
     "effects": {
       "hansoku_rate": -15,
+      "defend_rate": 15,
       "defense.men": 15,
       "defense.kote": 15,
       "defense.dou": 15,
@@ -135,7 +136,7 @@
   },
   {
     "id": "dan_pressing",
-    "name": "Căng Tay!",
+    "name": "Căng Tay !!!",
     "tier": "Dan",
     "description": "Tăng tỉ lệ tấn công và tỉ lệ các kĩ thuật cho cả 5 thành viên trong đội.",
     "effects": {
@@ -152,9 +153,9 @@
     "tier": "Dan",
     "description": "Tăng Thể Lực, giảm tỉ lệ phạm luật (hansoku) cho 5 thành viên trong đội và giảm tỉ lệ tấn công của 5 thành viên đối phương khi có Nguyễn Thị Nhị Phương trong đội.",
     "effects": {
-      "stamina": 30,
+      "stamina": 35,
       "hansoku_rate": -20,
-      "opp.attack_rate": -20
+      "opp.attack_rate": -25
     }
   },
   {
@@ -193,12 +194,12 @@
     "tier": "Dan",
     "description": "Tăng chỉ số tấn công, kĩ thuật và phòng thủ nếu vừa đạt được ippon.",
     "effects": {
-      "attack_rate": 25,
-      "defend_rate": 25,
-      "technique.men": 20,
-      "technique.kote": 20,
-      "technique.dou": 20,
-      "technique.tsuki": 20
+      "attack_rate": 30,
+      "defend_rate": 30,
+      "technique.men": 25,
+      "technique.kote": 25,
+      "technique.dou": 25,
+      "technique.tsuki": 25
     }
   },
   {

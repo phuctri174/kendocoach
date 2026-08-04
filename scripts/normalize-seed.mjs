@@ -40,3 +40,8 @@ checkSeedFile("../items_catalog.json", "items_catalog.json", (items) => {
   if (!Array.isArray(items)) throw new Error("expected an array of items");
   console.log(`[seed] items_catalog.json OK — ${items.length} items`);
 });
+
+checkSeedFile("../passives_catalog.json", "passives_catalog.json", (catalog) => {
+  if (!Array.isArray(catalog?.passives)) throw new Error("expected a `passives` array");
+  console.log(`[seed] passives_catalog.json OK — ${catalog.passives.length} passive entries`);
+});

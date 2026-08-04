@@ -40,6 +40,21 @@ export interface SimulateTeamMatchOptions {
   buildLiveModifier?: (context: {
     teamAWinsSoFar: number;
     teamBWinsSoFar: number;
+    /** This bout's two combatants — lets a hook react to who's actually
+     *  fighting (e.g. a passive that only fires in its own owner's bout, or
+     *  one that compares the two sides' stats at bout start). */
+    playerA: Player;
+    playerB: Player;
+    /** Every bout already resolved earlier in this same game, in play
+     *  order — lets a hook carry an earlier bout's own result forward into
+     *  a later, not-yet-simulated one (see the cross-bout passives in
+     *  versus/passives.ts). Always the 5 regular bouts only: empty for the
+     *  first of them, and never includes the daihyosen tiebreak itself. */
+    boutsSoFar: readonly Bout[];
+    /** True only for the daihyosen tiebreak call — the 5 regular bouts'
+     *  cross-bout passives deliberately don't reach into it (their own
+     *  design decision, not an engine constraint). */
+    isDaihyosen: boolean;
   }) => LiveModifierHook | undefined;
 }
 
@@ -119,6 +134,10 @@ export function simulateTeamMatch(
       dynamicModifier: options.buildLiveModifier?.({
         teamAWinsSoFar: runningWinsA,
         teamBWinsSoFar: runningWinsB,
+        playerA: sideA[i],
+        playerB: sideB[i],
+        boutsSoFar: bouts,
+        isDaihyosen: false,
       }),
     });
     bouts.push(bout);
@@ -160,6 +179,10 @@ export function simulateTeamMatch(
       dynamicModifier: options.buildLiveModifier?.({
         teamAWinsSoFar: teamAWins,
         teamBWinsSoFar: teamBWins,
+        playerA: repA,
+        playerB: repB,
+        boutsSoFar: bouts,
+        isDaihyosen: true,
       }),
     });
     teamAIppons += tiebreak.result.ipponsA;

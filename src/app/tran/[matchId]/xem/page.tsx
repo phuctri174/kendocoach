@@ -440,7 +440,7 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
   }
 
   return (
-    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
+    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6 sm:pb-16">
       <header className="flex shrink-0 flex-col items-center gap-1 text-center">
         <p className="display text-xs text-brass-600">
           Đấu đối kháng · {match.format === "bo3" ? "Bo3" : "Bo5"} · Đang xem
@@ -510,6 +510,8 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
             itemEquipsB={game.item_equips_b}
             basePlayerById={basePlayerById}
             bonusByPlayer={bonusByPlayer}
+            rosterANames={rawPlayersA.map((p) => p.name)}
+            rosterBNames={rawPlayersB.map((p) => p.name)}
             seriesDecided={false}
             onContinue={noop}
             hideActions
@@ -530,6 +532,8 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
             itemEquipsB={game.item_equips_b}
             basePlayerById={basePlayerById}
             bonusByPlayer={bonusByPlayer}
+            rosterANames={rawPlayersA.map((p) => p.name)}
+            rosterBNames={rawPlayersB.map((p) => p.name)}
             seriesDecided={match.status === "completed"}
             onContinue={noop}
             hideActions

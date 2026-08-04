@@ -185,6 +185,12 @@ export interface Exchange {
   stance: { a: CombatStyle; b: CombatStyle };
   /** Stance changes taken after this exchange, i.e. in reaction to an ippon. */
   stanceSwitches?: StanceSwitch[];
+  /** Character-passive flavour beats to narrate alongside this exchange
+   *  (e.g. Nhi Nhi's excited/exhausted flip) — see LiveModifierHook's
+   *  `notes` in kendo/bout.ts. Purely descriptive, same as everything else
+   *  on Exchange: the passive's actual stat effect is already baked into
+   *  the exchange's own rolls by the time this is attached. */
+  passiveEvents?: { side: Side; text: string }[];
   /** Sides that picked up a fatigue debuff at the end of this exchange. */
   fatigueTriggers?: Side[];
   /** 0-1 performance debuff in effect during this exchange. */
@@ -229,7 +235,11 @@ export type LogKind =
    */
   | "stance"
   | "bout-result"
-  | "banner";
+  | "banner"
+  /** A character-passive flavour beat (e.g. Nhi Nhi's excited/exhausted
+   *  state) — rendered with its own highlighted styling, distinct from a
+   *  plain "event" line. */
+  | "passive";
 
 export interface MatchLogEvent {
   id: string;

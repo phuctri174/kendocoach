@@ -18,6 +18,7 @@ import {
 import type { ItemEquip } from "@/lib/versus/draft";
 import { EquipIcon, type EquipDisplay } from "@/components/versus/EquipBadge";
 import { PlayerHoverCard } from "@/components/versus/PlayerHoverCard";
+import { PassiveBadge } from "@/components/versus/PassiveBadge";
 import { useTapReveal } from "@/components/versus/useTapReveal";
 import { formatEffectDelta, statEffectLabel } from "@/lib/versus/statLabels";
 
@@ -94,10 +95,19 @@ export function BoutResultBoard({
   onFullyRevealed,
   mySide,
   gameWinnerSide,
+  rosterANames,
+  rosterBNames,
 }: {
   match: DisplayMatch;
   teamAName: string;
   teamBName: string;
+  /** Every drafted character's name for each side, in the log's OWN
+   *  vocabulary (bout.playerA/playerB.name) — used to color-code names as
+   *  they appear in the narration text, not the two real players' own
+   *  display names (teamAName/teamBName), which never appear in the log at
+   *  all. */
+  rosterANames: readonly string[];
+  rosterBNames: readonly string[];
   /** Every currently-qualifying stacked augment for each side — team-wide,
    *  so the same list shows under all 5 of that side's players. */
   augmentBadgesA: EquipDisplay[];
@@ -254,7 +264,7 @@ export function BoutResultBoard({
               aria-live="polite"
             >
               {visible.map((event) => (
-                <LogLine key={event.id} event={event} />
+                <LogLine key={event.id} event={event} rosterANames={rosterANames} rosterBNames={rosterBNames} />
               ))}
             </div>
           </HexPanel>
@@ -473,7 +483,7 @@ function TeamTally({
  * being listed twice.
  */
 function TeamAugmentBadge({ augments }: { augments: EquipDisplay[] }) {
-  const { visible, pos, triggerRef, triggerProps } = useTapReveal<HTMLButtonElement>();
+  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
 
   const grouped = useMemo(() => {
     const byName = new Map<string, { augment: EquipDisplay; count: number }>();
@@ -503,6 +513,7 @@ function TeamAugmentBadge({ augments }: { augments: EquipDisplay[] }) {
         pos &&
         createPortal(
           <div
+            ref={popoverRef}
             className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 flex-col gap-1.5 bg-card px-3 py-2 text-left shadow-lg"
             style={{ top: pos.top, left: pos.left }}
           >
@@ -560,6 +571,13 @@ function Scoreboard({
 
         return (
           <li key={bout.id} className="flex items-stretch gap-1 sm:gap-2">
+            {/* Aka/shiro (red/white) sash markers, real-kendo convention —
+                purely decorative side identifiers, one per position box, so
+                they sit outside the box rather than stretching with it. */}
+            <span
+              aria-hidden
+              className="h-3 w-1.5 shrink-0 self-center rounded-full bg-blood sm:h-3.5 sm:w-2"
+            />
             <SideBlock
               index={row + 1}
               bout={bout}
@@ -588,6 +606,10 @@ function Scoreboard({
               itemEquips={itemEquipsB}
               basePlayerById={basePlayerById}
               bonusByPlayer={bonusByPlayer}
+            />
+            <span
+              aria-hidden
+              className="h-3 w-1.5 shrink-0 self-center rounded-full border-2 border-forest-900 bg-[#ffffff] sm:h-3.5 sm:w-2"
             />
           </li>
         );
@@ -652,6 +674,7 @@ function SideBlock({
           ) : (
             <span className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm">{player.name}</span>
           )}
+          <PassiveBadge playerId={player.id} />
         </div>
         <div className={`flex min-h-4 flex-wrap items-center gap-1 sm:min-h-6 ${mirrored ? "justify-end" : ""}`}>
           {badges.map((b, idx) => (
@@ -678,19 +701,65 @@ function SideBlock({
   );
 }
 
-function LogLine({ event }: { event: MatchLogEvent }) {
+/** Escapes a name for safe use inside a RegExp alternation. */
+function escapeForRegex(name: string): string {
+  return name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Colors each drafted character's name wherever it appears in a log line —
+ * green for side A's roster, red for side B's — so a line naming both an
+ * attacker and a defender (e.g. a counter-ippon beat) still reads correctly
+ * at a glance regardless of which side the line's own overall `tone` favors.
+ * Longest names are matched first so one name can never accidentally
+ * swallow a shorter one that happens to be a substring of it.
+ */
+function highlightNames(text: string, rosterANames: readonly string[], rosterBNames: readonly string[]) {
+  const aSet = new Set(rosterANames);
+  const bSet = new Set(rosterBNames);
+  const all = Array.from(new Set([...rosterANames, ...rosterBNames])).sort((a, b) => b.length - a.length);
+  if (all.length === 0) return text;
+
+  const regex = new RegExp(`(${all.map(escapeForRegex).join("|")})`, "g");
+  const parts = text.split(regex);
+  return parts.map((part, i) =>
+    aSet.has(part) ? (
+      <span key={i} className="text-forest-500 font-medium">
+        {part}
+      </span>
+    ) : bSet.has(part) ? (
+      <span key={i} className="text-blood font-medium">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
+
+function LogLine({
+  event,
+  rosterANames,
+  rosterBNames,
+}: {
+  event: MatchLogEvent;
+  rosterANames: readonly string[];
+  rosterBNames: readonly string[];
+}) {
+  const hl = (text: string) => highlightNames(text, rosterANames, rosterBNames);
+
   if (event.kind === "banner") {
     const tone =
       event.side === "A" ? "bg-brass-400 text-forest-900" : event.side === "B" ? "bg-blood text-paper" : "bg-forest-600 text-paper";
-    return <p className={`hex-tab display mt-3 px-4 py-2 text-center text-base ${tone}`}>{event.text}</p>;
+    return <p className={`hex-tab display mt-3 px-4 py-2 text-center text-base ${tone}`}>{hl(event.text)}</p>;
   }
 
   if (event.kind === "match-header") {
-    return <p className="display border-b border-brass-600/30 pb-2 text-sm text-brass-600">{event.text}</p>;
+    return <p className="display border-b border-brass-600/30 pb-2 text-sm text-brass-600">{hl(event.text)}</p>;
   }
 
   if (event.kind === "bout-start") {
-    return <p className="display mt-3 text-sm text-brass-600">{event.text}</p>;
+    return <p className="display mt-3 text-sm text-brass-600">{hl(event.text)}</p>;
   }
 
   if (event.kind === "stance" && event.stance) {
@@ -699,22 +768,30 @@ function LogLine({ event }: { event: MatchLogEvent }) {
     return (
       <p className="pl-3 text-sm leading-relaxed text-bone-dim">
         <span className="text-brass-600">— </span>
-        {before}
+        {hl(before)}
         <span className={`display font-bold ${STANCE_COLOR[event.stance]}`}>{word}</span>
+      </p>
+    );
+  }
+
+  if (event.kind === "passive") {
+    return (
+      <p className="hex-tab display mt-1 mb-1 ml-3 w-fit bg-brass-300 px-2 py-0.5 text-xs text-forest-900">
+        {event.text}
       </p>
     );
   }
 
   if (event.kind === "bout-result") {
     const tone = event.side === "A" ? "text-brass-600" : event.side === "B" ? "text-blood" : "text-bone-dim";
-    return <p className={`mt-1 mb-1 pl-3 text-sm font-semibold ${tone}`}>{event.text}</p>;
+    return <p className={`mt-1 mb-1 pl-3 text-sm font-semibold ${tone}`}>{hl(event.text)}</p>;
   }
 
   const tone = event.side === "A" ? "text-bone" : event.side === "B" ? "text-bone-dim" : "text-bone-faint";
   return (
     <p className={`pl-3 text-sm leading-relaxed ${tone}`}>
       <span className="text-brass-600">— </span>
-      {event.text}
+      {hl(event.text)}
     </p>
   );
 }

@@ -18,9 +18,18 @@ export interface EquipDisplay {
 /** Full name + description + stat breakdown, positioned under whichever
  *  trigger opened it — shared by EquipBadge and EquipIcon so both reveal the
  *  same detail. */
-function DetailPopover({ equip, pos }: { equip: EquipDisplay; pos: { top: number; left: number } }) {
+function DetailPopover({
+  equip,
+  pos,
+  popoverRef,
+}: {
+  equip: EquipDisplay;
+  pos: { top: number; left: number };
+  popoverRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return createPortal(
     <div
+      ref={popoverRef}
       className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 bg-card px-3 py-2 text-left shadow-lg"
       style={{ top: pos.top, left: pos.left }}
     >
@@ -46,7 +55,7 @@ function DetailPopover({ equip, pos }: { equip: EquipDisplay; pos: { top: number
  *  (desktop bonus), same interaction as PlayerHoverCard rather than a native
  *  title tooltip, which mobile taps can't reliably surface. */
 export function EquipBadge({ equip }: { equip: EquipDisplay }) {
-  const { visible, pos, triggerRef, triggerProps } = useTapReveal<HTMLButtonElement>();
+  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
   return (
     <>
       <button
@@ -63,7 +72,7 @@ export function EquipBadge({ equip }: { equip: EquipDisplay }) {
         )}
         <span className="truncate">{equip.name}</span>
       </button>
-      {visible && pos && <DetailPopover equip={equip} pos={pos} />}
+      {visible && pos && <DetailPopover equip={equip} pos={pos} popoverRef={popoverRef} />}
     </>
   );
 }
@@ -74,7 +83,7 @@ export function EquipBadge({ equip }: { equip: EquipDisplay }) {
  *  position boxes. Tap/click or hover opens the exact same detail popover as
  *  EquipBadge, just from a smaller trigger. */
 export function EquipIcon({ equip }: { equip: EquipDisplay }) {
-  const { visible, pos, triggerRef, triggerProps } = useTapReveal<HTMLButtonElement>();
+  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLButtonElement>();
   return (
     <>
       <button
@@ -91,7 +100,7 @@ export function EquipIcon({ equip }: { equip: EquipDisplay }) {
           <span className="text-[9px] text-brass-300 sm:text-[10px]">✦</span>
         )}
       </button>
-      {visible && pos && <DetailPopover equip={equip} pos={pos} />}
+      {visible && pos && <DetailPopover equip={equip} pos={pos} popoverRef={popoverRef} />}
     </>
   );
 }

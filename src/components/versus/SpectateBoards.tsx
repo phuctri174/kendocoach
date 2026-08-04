@@ -3,6 +3,7 @@
 import { HexPanel } from "@/components/Hex";
 import { CLUB_ROSTER } from "@/data/club";
 import { currentTurnSide, type DraftState } from "@/lib/versus/draft";
+import { PassiveBadge } from "@/components/versus/PassiveBadge";
 
 const NAME_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p.name]));
 
@@ -43,10 +44,11 @@ export function DraftBoardSpectator({
 
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-5 sm:gap-3">
         {draftState.pool.map((candidateId) => (
-          <li key={candidateId}>
+          <li key={candidateId} className="flex flex-col items-center">
             <span className="hex-tab block w-full bg-forest-700 px-3 py-3 text-center text-paper">
               <span className="display text-sm">{NAME_BY_ID.get(candidateId) ?? candidateId}</span>
             </span>
+            <PassiveBadge playerId={candidateId} />
           </li>
         ))}
       </ul>
@@ -68,6 +70,7 @@ function RosterColumn({ label, picked }: { label: string; picked: string[] }) {
           {Array.from({ length: 5 }, (_, i) => picked[i]).map((id, i) => (
             <li key={i} className="truncate text-sm text-bone">
               {id ? (NAME_BY_ID.get(id) ?? id) : <span className="text-bone-faint">—</span>}
+              {id && <PassiveBadge playerId={id} />}
             </li>
           ))}
         </ol>
@@ -170,7 +173,10 @@ function RosterStatusPanel({ name, roster, locked }: { name: string; roster: str
         <p className="text-sm text-bone-faint">{locked ? "Đã chốt đội hình." : "Đang xếp đội hình…"}</p>
         <ul className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-0.5 text-xs text-bone-dim">
           {roster.map((playerId) => (
-            <li key={playerId}>{NAME_BY_ID.get(playerId) ?? playerId}</li>
+            <li key={playerId} className="flex items-center gap-1">
+              {NAME_BY_ID.get(playerId) ?? playerId}
+              <PassiveBadge playerId={playerId} />
+            </li>
           ))}
         </ul>
       </div>

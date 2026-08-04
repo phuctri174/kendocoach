@@ -5,7 +5,9 @@ import {
   toPlayers,
   type LiveModifierHook,
   type Player,
+  type Side,
   type StatPath,
+  type StyleModifier,
   type Target,
   type Team,
 } from "@/lib/kendo";
@@ -16,6 +18,7 @@ import { AUGMENT_CATALOG } from "@/data/augments";
 import { ITEM_CATALOG } from "@/data/items";
 import type { Augment } from "./augments";
 import type { DraftSide, DraftState, ItemEquip } from "./draft";
+import { buildPassiveHookForBout, hasLivePassiveCandidates, resolvePassiveStaticEffects } from "./passives";
 
 const PERSON_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p]));
 const AUGMENT_BY_ID = new Map(AUGMENT_CATALOG.map((a) => [a.id, a]));
@@ -57,7 +60,7 @@ const MEMBERSHIP_GATED_TRIGGER_IDS: Record<string, Set<string>> = Object.fromEnt
  * `applyStyleModifier` directly (0-100 clamp per field), since a `Player`
  * structurally has every `BaseStats` field `applyStyleModifier` reads/writes.
  */
-function withFlatModifier(player: Player, modifier: Partial<Record<StatPath, number>> | undefined): Player {
+export function withFlatModifier(player: Player, modifier: Partial<Record<StatPath, number>> | undefined): Player {
   if (!modifier || Object.keys(modifier).length === 0) return player;
   const modifiedBase = applyStyleModifier(player, modifier);
   return { ...player, ...modifiedBase };
@@ -434,6 +437,22 @@ export async function buildVersusTeamsForGame(
     itemEffects: itemEffectsFor(game.item_equips_b),
   });
 
+  // Character passives (category A, see versus/passives.ts) layer on top of
+  // augments/items — per-player rather than team-wide, resolved the instant
+  // both lineups lock in (team/position/opponent membership is fully known
+  // here, same as the conditional gates above, just keyed by individual
+  // player id instead of whole-team effects).
+  const passiveEffects = resolvePassiveStaticEffects({
+    pickedA,
+    pickedB,
+    lineupA: game.lineup_a,
+    lineupB: game.lineup_b,
+    rawPlayersA,
+    rawPlayersB,
+  });
+  teamA.roster = teamA.roster.map((p) => withFlatModifier(p, passiveEffects.get(p.id)));
+  teamB.roster = teamB.roster.map((p) => withFlatModifier(p, passiveEffects.get(p.id)));
+
   return { teamA, teamB };
 }
 
@@ -477,48 +496,70 @@ function makeDanFightingHook(
   };
 }
 
-/** Merges however many per-side hooks into one, summing whatever each
- *  contributes for a given exchange — lets a side have both dan_nice from
- *  an earlier game and dan_fighting from this one active simultaneously. */
-function combineLiveModifiers(hooksA: LiveModifierHook[], hooksB: LiveModifierHook[]): LiveModifierHook | undefined {
-  if (hooksA.length === 0 && hooksB.length === 0) return undefined;
+/**
+ * Merges any number of hooks into one, summing whatever each contributes for
+ * a given exchange — generalized over dan_nice/dan_fighting's old per-side
+ * split (each of those still only ever returns `.a` or `.b`, never both) to
+ * also cover passive hooks that can touch both sides from the same call
+ * (e.g. Liên Toàn's mutual defend_rate hit — see versus/passives.ts) and
+ * that can attach narration notes.
+ */
+function combineLiveModifiers(hooks: LiveModifierHook[]): LiveModifierHook | undefined {
+  if (hooks.length === 0) return undefined;
   return (state) => {
-    const aParts = hooksA.map((h) => h(state)?.a).filter((m): m is NonNullable<typeof m> => !!m);
-    const bParts = hooksB.map((h) => h(state)?.b).filter((m): m is NonNullable<typeof m> => !!m);
+    const results = hooks
+      .map((h) => h(state))
+      .filter((r): r is { a?: StyleModifier; b?: StyleModifier; notes?: { side: Side; text: string }[] } => !!r);
+    if (results.length === 0) return undefined;
+    const aParts = results.map((r) => r.a).filter((m): m is NonNullable<typeof m> => !!m);
+    const bParts = results.map((r) => r.b).filter((m): m is NonNullable<typeof m> => !!m);
+    const notes = results.flatMap((r) => r.notes ?? []);
     return {
       a: aParts.length ? sumEffects(aParts) : undefined,
       b: bParts.length ? sumEffects(bParts) : undefined,
+      notes: notes.length ? notes : undefined,
     };
   };
 }
 
 /**
  * Builds simulateTeamMatch's buildLiveModifier for a game — the counterpart
- * to the static augment effects resolved in buildVersusTeamsForGame, for the
- * two augments (dan_nice, dan_fighting) that can't be pre-baked because they
- * depend on what happens *during* a bout. Async now: like
- * buildVersusTeamsForGame, it has to scan this match's augment history
- * (fetchAugmentHistory) rather than just this game's own pick, since a side
- * could be running dan_nice from game 1 and dan_fighting from game 3
- * simultaneously by game 5. Returns undefined for even (item-round) games
- * and whenever neither side has one of those two active, so the two
+ * to the static effects resolved in buildVersusTeamsForGame, for whatever
+ * can't be pre-baked because it depends on what happens *during* a bout:
+ * the two live augments (dan_nice, dan_fighting, odd games only, since
+ * augments only exist in odd games) and every live character passive
+ * (categories B/C/D/E/F in versus/passives.ts — these are NOT gated to odd
+ * games, since a drafted roster exists every game regardless of whether
+ * it's an augment or item round). Async: like buildVersusTeamsForGame, it
+ * has to scan this match's augment history (fetchAugmentHistory) rather
+ * than just this game's own pick, since a side could be running dan_nice
+ * from game 1 and dan_fighting from game 3 simultaneously by game 5.
+ * Returns undefined when nothing dynamic applies at all, so the two
  * probing/final simulateTeamMatch calls stay cheap and inert for every
- * other game.
+ * game that has neither.
  */
 export async function buildLiveModifierForGame(
   admin: SupabaseClient,
-  game: { match_id: string; game_number: number },
+  game: { match_id: string; game_number: number; draft_state: DraftState },
 ): Promise<SimulateTeamMatchOptions["buildLiveModifier"]> {
   const isOddGame = game.game_number % 2 === 1;
-  if (!isOddGame) return undefined;
+  const pickedA = game.draft_state.pickedA;
+  const pickedB = game.draft_state.pickedB;
 
-  const { a: augmentIdsA, b: augmentIdsB } = await fetchAugmentHistory(admin, game.match_id, game.game_number);
-  const dynamicIds = new Set(["dan_nice", "dan_fighting"]);
-  const dynamicA = augmentIdsA.filter((id) => dynamicIds.has(id));
-  const dynamicB = augmentIdsB.filter((id) => dynamicIds.has(id));
-  if (dynamicA.length === 0 && dynamicB.length === 0) return undefined;
+  let dynamicA: string[] = [];
+  let dynamicB: string[] = [];
+  if (isOddGame) {
+    const { a: augmentIdsA, b: augmentIdsB } = await fetchAugmentHistory(admin, game.match_id, game.game_number);
+    const dynamicIds = new Set(["dan_nice", "dan_fighting"]);
+    dynamicA = augmentIdsA.filter((id) => dynamicIds.has(id));
+    dynamicB = augmentIdsB.filter((id) => dynamicIds.has(id));
+  }
 
-  return ({ teamAWinsSoFar, teamBWinsSoFar }) => {
+  if (dynamicA.length === 0 && dynamicB.length === 0 && !hasLivePassiveCandidates(pickedA, pickedB)) {
+    return undefined;
+  }
+
+  return ({ teamAWinsSoFar, teamBWinsSoFar, playerA, playerB, boutsSoFar, isDaihyosen }) => {
     const hookFor = (side: DraftSide, id: string): LiveModifierHook | undefined => {
       const augment = AUGMENT_BY_ID.get(id);
       if (!augment) return undefined;
@@ -526,9 +567,19 @@ export async function buildLiveModifierForGame(
       if (id === "dan_fighting") return makeDanFightingHook(side, augment.effects, teamAWinsSoFar, teamBWinsSoFar);
       return undefined;
     };
-    const hooksA = dynamicA.map((id) => hookFor("A", id)).filter((h): h is LiveModifierHook => !!h);
-    const hooksB = dynamicB.map((id) => hookFor("B", id)).filter((h): h is LiveModifierHook => !!h);
-    return combineLiveModifiers(hooksA, hooksB);
+    const augmentHooksA = dynamicA.map((id) => hookFor("A", id)).filter((h): h is LiveModifierHook => !!h);
+    const augmentHooksB = dynamicB.map((id) => hookFor("B", id)).filter((h): h is LiveModifierHook => !!h);
+    const passiveHook = buildPassiveHookForBout({
+      pickedA,
+      pickedB,
+      playerA,
+      playerB,
+      teamAWinsSoFar,
+      teamBWinsSoFar,
+      boutsSoFar,
+      isDaihyosen,
+    });
+    return combineLiveModifiers([...augmentHooksA, ...augmentHooksB, ...(passiveHook ? [passiveHook] : [])]);
   };
 }
 

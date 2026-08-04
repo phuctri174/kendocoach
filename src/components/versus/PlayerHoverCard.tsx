@@ -34,7 +34,7 @@ export function PlayerHoverCard({
   bonus: Partial<Record<StatPath, number>>;
   className?: string;
 }) {
-  const { visible, pos, triggerRef, triggerProps } = useTapReveal<HTMLSpanElement>();
+  const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLSpanElement>();
 
   const rows = STAT_PATHS.map((path) => ({
     path,
@@ -57,6 +57,7 @@ export function PlayerHoverCard({
         pos &&
         createPortal(
           <div
+            ref={popoverRef}
             className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 bg-card px-3 py-2 text-left shadow-lg"
             style={{ top: pos.top, left: pos.left }}
           >

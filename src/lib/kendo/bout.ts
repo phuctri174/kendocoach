@@ -78,11 +78,27 @@ export interface LiveModifierState {
   exchangeIndex: number;
   ipponsA: number;
   ipponsB: number;
+  /** Each side's stance during this exchange — lets a hook react to "is this
+   *  player in Jodan right now" (e.g. Liên Toàn's passive) without needing
+   *  its own separate stance-tracking hook point. */
+  stanceA: CombatStyle;
+  stanceB: CombatStyle;
+  /** Same rng the bout itself rolls against — a hook that needs its own
+   *  random outcome (e.g. Nhi Nhi's excited/exhausted passive) draws from
+   *  this rather than constructing a separate one, so a bout still replays
+   *  identically from the same seed. */
+  rng: Rng;
 }
 
 export type LiveModifierHook = (
   state: LiveModifierState,
-) => { a?: StyleModifier; b?: StyleModifier } | void;
+) => {
+  a?: StyleModifier;
+  b?: StyleModifier;
+  /** Flavour beats to attach to this exchange's narration (e.g. announcing
+   *  a passive's state change) — see Exchange.passiveEvents. */
+  notes?: { side: Side; text: string }[];
+} | void;
 
 const clamp = (v: number, min: number, max: number) =>
   Math.min(max, Math.max(min, v));
@@ -283,10 +299,12 @@ export function simulateBout(
     // this is a no-op for every solo-mode call.
     let effStatsA = statsA;
     let effStatsB = statsB;
+    let livePassiveNotes: { side: Side; text: string }[] | undefined;
     if (options.dynamicModifier) {
-      const live = options.dynamicModifier({ exchangeIndex: i, ipponsA, ipponsB });
+      const live = options.dynamicModifier({ exchangeIndex: i, ipponsA, ipponsB, stanceA, stanceB, rng });
       if (live?.a) effStatsA = applyStyleModifier(statsA, live.a);
       if (live?.b) effStatsB = applyStyleModifier(statsB, live.b);
+      if (live?.notes?.length) livePassiveNotes = live.notes;
     }
 
     const initiator: Side = rng.weighted(
@@ -381,6 +399,7 @@ export function simulateBout(
       fatigue: { a: fatA, b: fatB },
       hitChance: pHit,
       counterChance: pCounter,
+      passiveEvents: livePassiveNotes,
     };
     exchanges.push(exchange);
 
