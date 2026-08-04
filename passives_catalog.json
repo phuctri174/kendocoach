@@ -1,5 +1,5 @@
 {
-  "_note": "Character passive ('Nội tại') numeric effects — hand-edit freely. Trigger LOGIC (position checks, same-team/opposing detection, live per-exchange hooks, carry-forward win/loss/draw conditions, Nhi Nhi's re-roll timing) lives in code (src/lib/versus/passives.ts) and is NOT here; this file only holds the stat deltas each named entry contributes. Every entry is deliberately its own standalone block, even where two entries' numbers currently match — nothing here is shared/reused across entries, so tuning one never silently changes another. Field guide: `character` is whose passive this clause conceptually belongs to; `passiveName` is the display name shown highlighted in the UI's detail popover — entries that are really facets of ONE ability (e.g. Lương Trọng Nhân's teammate-buff + his Đặng Kiều Diễm synergy, or a shared same_team/opposing pair like Phan Anh Minh & Phan Phúc Lâm's) share the exact same passiveName on purpose: the UI groups a character's entries into one displayed block per distinct passiveName, so entries meant to read as one ability must use identical text here, and entries meant to read as separate, unrelated abilities (e.g. Phan Anh Minh has three: Khiên Đôi / Đối Nghịch Duyên Nợ / Nghịch Cảnh Quật Khởi) must use different names; `appliesTo` says who actually RECEIVES the effect (their own name if it's literally a different character, e.g. a partner's share of a pairing bonus, or a role like 'his same-position opponent' / 'not-yet-played teammates' when the recipient is determined dynamically at resolve time); `context` labels the relationship driving it (self / same_team / opposing / opponent / team / teammates); `condition` is a short human description of the trigger, kept in sync with the real logic in passives.ts by hand. For the pairing characters with multiple entries (Lương Trọng Nhân & Đặng Kiều Diễm; Phan Anh Minh & Nguyễn Kiều Hồng Nhung; Trần Mai Khánh & Tạ Đức Thiện; Phan Anh Minh & Phan Phúc Lâm; Nguyễn Trung Tín & Nguyễn Phúc Diệu An), each character's own same_team vs opposing vs partner-share entry is listed separately right next to its counterpart below — read `character` + `context` together to tell them apart.",
+  "_note": "Character passive ('Nội tại') numeric effects — hand-edit freely. Trigger LOGIC (position checks, same-team/opposing detection, live per-exchange hooks, carry-forward win/loss/draw conditions, Nhi Nhi's re-roll timing) lives in code (src/lib/versus/passives.ts) and is NOT here; this file only holds the stat deltas each named entry contributes. Every entry is deliberately its own standalone block, even where two entries' numbers currently match — nothing here is shared/reused across entries, so tuning one never silently changes another. Field guide: `character` is whose passive this clause conceptually belongs to; `passiveName` is the display name shown highlighted in the UI's detail popover — entries that are really facets of ONE ability (e.g. Lương Trọng Nhân's teammate-buff + his Đặng Kiều Diễm synergy, or a shared same_team/opposing pair like Phan Anh Minh & Phan Phúc Lâm's) share the exact same passiveName on purpose: the UI groups a character's entries into one displayed block per distinct passiveName, so entries meant to read as one ability must use identical text here, and entries meant to read as separate, unrelated abilities (e.g. Phan Anh Minh has three: Khiên Đôi / Đối Nghịch Duyên Nợ / Nghịch Cảnh Quật Khởi) must use different names; `appliesTo` says who actually RECEIVES the effect (their own name if it's literally a different character, e.g. a partner's share of a pairing bonus, or a role like 'his same-position opponent' / 'all her teammates' when the recipient is determined dynamically at resolve time); `context` labels the relationship driving it (self / same_team / opposing / opponent / team / teammates); `condition` is a short human description of the trigger, kept in sync with the real logic in passives.ts by hand. For the pairing characters with multiple entries (Lương Trọng Nhân & Đặng Kiều Diễm; Phan Anh Minh & Nguyễn Kiều Hồng Nhung; Trần Mai Khánh & Tạ Đức Thiện; Phan Anh Minh & Phan Phúc Lâm; Nguyễn Trung Tín & Nguyễn Phúc Diệu An), each character's own same_team vs opposing vs partner-share entry is listed separately right next to its counterpart below — read `character` + `context` together to tell them apart.",
   "passives": [
     {
       "id": "dang_kieu_diem_taisho",
@@ -397,7 +397,7 @@
       "id": "tran_mai_khanh_win_carryforward",
       "character": "Trần Mai Khánh",
       "passiveName": "Hịch Tướng Sỹ",
-      "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
+      "appliesTo": "all her teammates, for the rest of the game",
       "context": "teammates",
       "condition": "She wins her own individual bout. Never applies to the daihyosen tiebreak.",
       "effects": {
@@ -412,7 +412,7 @@
       "id": "nguyen_phuc_dieu_an_win_or_draw_carryforward",
       "character": "Nguyễn Phúc Diệu An",
       "passiveName": "Mầm Non",
-      "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
+      "appliesTo": "all her teammates, for the rest of the game",
       "context": "teammates",
       "condition": "She wins OR draws her own individual bout. Never applies to the daihyosen tiebreak.",
       "effects": {
@@ -427,7 +427,7 @@
       "id": "nguyen_cao_bich_tram_loss_carryforward",
       "character": "Nguyễn Cao Bích Trâm",
       "passiveName": "Quái Vật Thiên Tài",
-      "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
+      "appliesTo": "all her teammates, for the rest of the game",
       "context": "teammates",
       "condition": "She loses her own individual bout. Never applies to the daihyosen tiebreak.",
       "effects": {

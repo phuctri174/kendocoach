@@ -161,7 +161,7 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
     },
     {
       name: "Mầm Non",
-      text: "Nếu thắng hoặc hòa trận của mình: các đồng đội chưa thi đấu tăng chỉ số tấn công và kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
+      text: "Nếu thắng hoặc hòa trận của mình: tất cả đồng đội tăng chỉ số tấn công và kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
     },
   ],
 
@@ -202,7 +202,7 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
     },
     {
       name: "Hịch Tướng Sỹ",
-      text: "Nếu thắng trận của mình: các đồng đội chưa thi đấu tăng kĩ thuật và thể lực cho phần còn lại của ván (không áp dụng cho daihyosen).",
+      text: "Nếu thắng trận của mình: tất cả đồng đội tăng kĩ thuật và thể lực cho phần còn lại của ván (không áp dụng cho daihyosen).",
     },
   ],
 
@@ -243,7 +243,7 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
   [ID.nguyenCaoBichTram]: [
     {
       name: "Quái Vật Thiên Tài",
-      text: "Nếu thua trận của mình: các đồng đội chưa thi đấu tăng thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
+      text: "Nếu thua trận của mình: tất cả đồng đội tăng thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
     },
   ],
 
@@ -707,17 +707,28 @@ function resultFor(charId: string, boutsSoFar: readonly Bout[]): "win" | "loss" 
 
 /**
  * F: cross-bout carry-forward — Trần Mai Khánh / Nguyễn Phúc Diệu An /
- * Nguyễn Cao Bích Trâm each buff their team's remaining not-yet-played bouts
- * once their OWN bout resolves. `boutsSoFar` (threaded through
- * simulateTeamMatch's bout loop, see teamMatch.ts) already only ever
+ * Nguyễn Cao Bích Trâm each buff their whole team ("tất cả đồng đội" — see
+ * PASSIVE_BLOCKS_BY_CHARACTER_ID/passives_catalog.json) once their OWN bout
+ * resolves. Described as "all teammates" rather than "not-yet-played
+ * teammates" (an earlier wording this code used to match) — the two are
+ * mechanically identical here regardless of wording: `boutsSoFar` (threaded
+ * through simulateTeamMatch's bout loop, see teamMatch.ts) only ever
  * contains bouts strictly earlier than the one this hook is being built for,
- * so "remaining not-yet-played, in position order" falls out for free: her
- * own bout can never buff itself (she isn't in boutsSoFar yet when her own
- * hook is being built), and every subsequent bout's hook keeps finding her
- * already-resolved result for the rest of the game. Never called for the
- * daihyosen tiebreak (see buildPassiveHookForBout / SimulateTeamMatchOptions'
- * `isDaihyosen`) — confirmed as this feature's own scope, not an engine
- * limitation.
+ * and a bout that already resolved is immutable — the engine has no
+ * mechanism to retroactively alter an earlier bout's already-rolled
+ * exchanges, so "all teammates" can only ever actually reach the remaining
+ * ones no matter how it's phrased. The wording changed because "not yet
+ * played" read as implying some *additional* filter this function applies
+ * beyond what boutsSoFar naturally gives it, which isn't the case — there
+ * was no separate bug in the filtering itself (verified against the exact
+ * production code path multiple ways, including non-Senpo trigger positions
+ * and multiple stacked carry-forward sources on one team, all correct); the
+ * old phrasing was just more specific than the mechanism actually needed to
+ * be, which read as a claim the code wasn't making. Her own bout can never
+ * buff itself (she isn't in boutsSoFar yet when her own hook is being
+ * built). Never called for the daihyosen tiebreak (see buildPassiveHookForBout
+ * / SimulateTeamMatchOptions' `isDaihyosen`) — confirmed as this feature's
+ * own scope, not an engine limitation.
  */
 function makeCarryForwardHook(
   pickedA: readonly string[],
