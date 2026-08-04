@@ -44,11 +44,11 @@ export function DraftBoardSpectator({
 
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-5 sm:gap-3">
         {draftState.pool.map((candidateId) => (
-          <li key={candidateId} className="flex flex-col items-center">
+          <li key={candidateId} className="relative">
             <span className="hex-tab block w-full bg-forest-700 px-3 py-3 text-center text-paper">
               <span className="display text-sm">{NAME_BY_ID.get(candidateId) ?? candidateId}</span>
             </span>
-            <PassiveBadge playerId={candidateId} />
+            <PassiveBadge playerId={candidateId} className="absolute -top-1 -right-1" />
           </li>
         ))}
       </ul>

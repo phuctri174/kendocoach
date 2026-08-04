@@ -245,16 +245,35 @@ export function BoutResultBoard({
           unreadable sliver — the page falls back to scrolling past that
           floor instead, via main's own overflow-y-auto. */}
       <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-2 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-none lg:gap-6">
-        <Scoreboard
-          bouts={all}
-          progress={progress}
-          resolved={resolved}
-          showAll={finished}
-          itemEquipsA={itemEquipsA}
-          itemEquipsB={itemEquipsB}
-          basePlayerById={basePlayerById}
-          bonusByPlayer={bonusByPlayer}
-        />
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <Scoreboard
+            bouts={match.bouts}
+            progress={progress}
+            resolved={resolved}
+            showAll={finished}
+            itemEquipsA={itemEquipsA}
+            itemEquipsB={itemEquipsB}
+            basePlayerById={basePlayerById}
+            bonusByPlayer={bonusByPlayer}
+          />
+          {/* Daihyosen is its own separate, explicit step — 2 representatives,
+              sudden-death ippon shobu — never just a 6th grid position next to
+              the 5 timed regular bouts above, even though it shares the same
+              per-exchange reveal mechanics (progress/resolved) once the log
+              narration actually reaches it. */}
+          {match.tiebreak && (
+            <DaihyosenSection
+              tiebreak={match.tiebreak}
+              progress={progress}
+              resolved={resolved}
+              showAll={finished}
+              itemEquipsA={itemEquipsA}
+              itemEquipsB={itemEquipsB}
+              basePlayerById={basePlayerById}
+              bonusByPlayer={bonusByPlayer}
+            />
+          )}
+        </div>
 
         <div className="flex min-h-0 flex-col gap-1.5 sm:gap-3">
           <HexPanel cut={18} className="min-h-[220px] flex-1">
@@ -590,10 +609,8 @@ function Scoreboard({
               bonusByPlayer={bonusByPlayer}
             />
             <div className="flex w-9 shrink-0 flex-col items-center justify-center sm:w-12">
-              <span className="display text-[10px] text-brass-600 sm:text-[11px]">{bout.daihyosen ? "DH" : "VS"}</span>
-              <span className="text-[9px] leading-tight text-bone-faint sm:text-[10px]">
-                {bout.daihyosen ? "" : bout.position}
-              </span>
+              <span className="display text-[10px] text-brass-600 sm:text-[11px]">VS</span>
+              <span className="text-[9px] leading-tight text-bone-faint sm:text-[10px]">{bout.position}</span>
             </div>
             <SideBlock
               index={row + 6}
@@ -615,6 +632,80 @@ function Scoreboard({
         );
       })}
     </ol>
+  );
+}
+
+/**
+ * Daihyosen: its own explicit, visually separate step — never a 6th grid
+ * position squeezed in next to the 5 timed regular bouts, even though its
+ * outcome (who represents each side) was only decided once both sides
+ * privately picked after seeing the 5 bouts tie plainly. Reuses SideBlock
+ * (same hover cards, passive icons, item badges, ippon/hansoku marks) since
+ * a daihyosen combatant is displayed identically to a regular one — only the
+ * surrounding chrome (banner instead of a position label, no "VS" divider
+ * shared with 5 other rows) makes it read as a separate sudden-death step.
+ */
+function DaihyosenSection({
+  tiebreak,
+  progress,
+  resolved,
+  showAll,
+  itemEquipsA,
+  itemEquipsB,
+  basePlayerById,
+  bonusByPlayer,
+}: {
+  tiebreak: Bout;
+  progress: Map<string, number>;
+  resolved: Set<string>;
+  showAll: boolean;
+  itemEquipsA: ItemEquip[];
+  itemEquipsB: ItemEquip[];
+  basePlayerById: Record<string, Player>;
+  bonusByPlayer: Record<string, Partial<Record<StatPath, number>>>;
+}) {
+  const through = showAll ? tiebreak.exchanges.length : (progress.get(tiebreak.id) ?? -1);
+  const started = through >= 0;
+  const winner = tiebreak.result.winner;
+  const decided = showAll || resolved.has(tiebreak.id);
+
+  return (
+    <div className="flex flex-col gap-1 sm:gap-1.5">
+      <p className="display text-center text-[10px] text-brass-600 sm:text-xs">— DAIHYOSEN · ĐẤU ĐẠI DIỆN, HẾT HIỆP KHI CÓ IPPON —</p>
+      <div className="flex items-stretch gap-1 sm:gap-2">
+        <span aria-hidden className="h-3 w-1.5 shrink-0 self-center rounded-full bg-blood sm:h-3.5 sm:w-2" />
+        <SideBlock
+          index={1}
+          bout={tiebreak}
+          side="A"
+          through={through}
+          started={started}
+          highlight={decided && winner === "A"}
+          itemEquips={itemEquipsA}
+          basePlayerById={basePlayerById}
+          bonusByPlayer={bonusByPlayer}
+        />
+        <div className="flex w-9 shrink-0 flex-col items-center justify-center sm:w-12">
+          <span className="display text-[10px] text-brass-600 sm:text-[11px]">DH</span>
+        </div>
+        <SideBlock
+          index={2}
+          bout={tiebreak}
+          side="B"
+          through={through}
+          started={started}
+          highlight={decided && winner === "B"}
+          mirrored
+          itemEquips={itemEquipsB}
+          basePlayerById={basePlayerById}
+          bonusByPlayer={bonusByPlayer}
+        />
+        <span
+          aria-hidden
+          className="h-3 w-1.5 shrink-0 self-center rounded-full border-2 border-forest-900 bg-[#ffffff] sm:h-3.5 sm:w-2"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -649,6 +740,17 @@ function SideBlock({
     ? [{ name: itemBadge.name, description: itemBadge.description, effects: itemBadge.effects, icon: itemBadge.icon }]
     : [];
   const base = basePlayerById[player.id];
+  // Reads the SAME per-exchange live-hook contribution the simulator itself
+  // rolled hits against (Exchange.liveModifierA/B) — not a separate
+  // recomputation — so the net total in the hover card is only ever "as of
+  // the narration's current point", never ahead of it. `through` can equal
+  // `exchanges.length` once fully revealed (see Scoreboard), one past the
+  // last valid index, hence the clamp.
+  const liveModifierIndex = Math.min(through, bout.exchanges.length - 1);
+  const liveBonus =
+    liveModifierIndex >= 0
+      ? (side === "A" ? bout.exchanges[liveModifierIndex].liveModifierA : bout.exchanges[liveModifierIndex].liveModifierB)
+      : undefined;
 
   return (
     <HexPanel
@@ -670,6 +772,7 @@ function SideBlock({
               name={player.name}
               base={base}
               bonus={bonusByPlayer[player.id] ?? {}}
+              liveBonus={liveBonus}
             />
           ) : (
             <span className="min-w-0 text-[13px] leading-tight text-bone sm:text-sm">{player.name}</span>

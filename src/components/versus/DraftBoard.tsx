@@ -97,7 +97,7 @@ export function DraftBoard({
 
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-5 sm:gap-3">
         {draftState.pool.map((candidateId) => (
-          <li key={candidateId} className="flex flex-col items-center">
+          <li key={candidateId} className="relative">
             <button
               type="button"
               onClick={() => pick(candidateId)}
@@ -106,7 +106,7 @@ export function DraftBoard({
             >
               <span className="display">{NAME_BY_ID.get(candidateId) ?? candidateId}</span>
             </button>
-            <PassiveBadge playerId={candidateId} />
+            <PassiveBadge playerId={candidateId} className="absolute -top-1 -right-1" />
           </li>
         ))}
       </ul>

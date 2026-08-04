@@ -1,9 +1,10 @@
 {
-  "_note": "Character passive ('Nội tại') numeric effects — hand-edit freely. Trigger LOGIC (position checks, same-team/opposing detection, live per-exchange hooks, carry-forward win/loss/draw conditions, Nhi Nhi's re-roll timing) lives in code (src/lib/versus/passives.ts) and is NOT here; this file only holds the stat deltas each named entry contributes. Every entry is deliberately its own standalone block, even where two entries' numbers currently match — nothing here is shared/reused across entries, so tuning one never silently changes another. Field guide: `character` is whose passive this clause conceptually belongs to; `appliesTo` says who actually RECEIVES the effect (their own name if it's literally a different character, e.g. a partner's share of a pairing bonus, or a role like 'his same-position opponent' / 'not-yet-played teammates' when the recipient is determined dynamically at resolve time); `context` labels the relationship driving it (self / same_team / opposing / opponent / team / teammates); `condition` is a short human description of the trigger, kept in sync with the real logic in passives.ts by hand. For the pairing characters with multiple entries (Lương Trọng Nhân & Đặng Kiều Diễm; Phan Anh Minh & Nguyễn Kiều Hồng Nhung; Trần Mai Khánh & Tạ Đức Thiện; Phan Anh Minh & Phan Phúc Lâm; Nguyễn Trung Tín & Nguyễn Phúc Diệu An), each character's own same_team vs opposing vs partner-share entry is listed separately right next to its counterpart below — read `character` + `context` together to tell them apart.",
+  "_note": "Character passive ('Nội tại') numeric effects — hand-edit freely. Trigger LOGIC (position checks, same-team/opposing detection, live per-exchange hooks, carry-forward win/loss/draw conditions, Nhi Nhi's re-roll timing) lives in code (src/lib/versus/passives.ts) and is NOT here; this file only holds the stat deltas each named entry contributes. Every entry is deliberately its own standalone block, even where two entries' numbers currently match — nothing here is shared/reused across entries, so tuning one never silently changes another. Field guide: `character` is whose passive this clause conceptually belongs to; `passiveName` is the display name shown highlighted in the UI's detail popover — entries that are really facets of ONE ability (e.g. Lương Trọng Nhân's teammate-buff + his Đặng Kiều Diễm synergy, or a shared same_team/opposing pair like Phan Anh Minh & Phan Phúc Lâm's) share the exact same passiveName on purpose: the UI groups a character's entries into one displayed block per distinct passiveName, so entries meant to read as one ability must use identical text here, and entries meant to read as separate, unrelated abilities (e.g. Phan Anh Minh has three: Khiên Đôi / Đối Nghịch Duyên Nợ / Nghịch Cảnh Quật Khởi) must use different names; `appliesTo` says who actually RECEIVES the effect (their own name if it's literally a different character, e.g. a partner's share of a pairing bonus, or a role like 'his same-position opponent' / 'not-yet-played teammates' when the recipient is determined dynamically at resolve time); `context` labels the relationship driving it (self / same_team / opposing / opponent / team / teammates); `condition` is a short human description of the trigger, kept in sync with the real logic in passives.ts by hand. For the pairing characters with multiple entries (Lương Trọng Nhân & Đặng Kiều Diễm; Phan Anh Minh & Nguyễn Kiều Hồng Nhung; Trần Mai Khánh & Tạ Đức Thiện; Phan Anh Minh & Phan Phúc Lâm; Nguyễn Trung Tín & Nguyễn Phúc Diệu An), each character's own same_team vs opposing vs partner-share entry is listed separately right next to its counterpart below — read `character` + `context` together to tell them apart.",
   "passives": [
     {
       "id": "dang_kieu_diem_taisho",
       "character": "Đặng Kiều Diễm",
+      "passiveName": "Bản Lĩnh Nữ Hoàng",
       "appliesTo": "self",
       "context": "self",
       "condition": "Positioned at Taisho this game.",
@@ -25,6 +26,7 @@
     {
       "id": "ka_nguyet_senpo",
       "character": "Ka Nguyệt",
+      "passiveName": "Gà Chiến",
       "appliesTo": "self",
       "context": "self",
       "condition": "Positioned at Senpo this game.",
@@ -37,21 +39,23 @@
     {
       "id": "tran_thuy_bao_nhu_opponent_debuff",
       "character": "Trần Thụy Bảo Như",
+      "passiveName": "Đương Kim Vô Địch",
       "appliesTo": "her same-position opponent",
       "context": "opponent",
       "condition": "She is positioned at Chuken or Taisho this game.",
       "effects": {
-        "stamina": -6,
-        "defend_rate": -6,
-        "defense.men": -6,
-        "defense.kote": -6,
-        "defense.dou": -6,
-        "defense.tsuki": -6
+        "stamina": -10,
+        "defend_rate": -7,
+        "defense.men": -7,
+        "defense.kote": -7,
+        "defense.dou": -7,
+        "defense.tsuki": -7
       }
     },
     {
       "id": "phan_anh_minh_same_team_phan_phuc_lam",
       "character": "Phan Anh Minh",
+      "passiveName": "Hổ Phụ Sinh Hổ Tử",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Phan Phúc Lâm.",
@@ -66,6 +70,7 @@
     {
       "id": "phan_phuc_lam_same_team_phan_anh_minh",
       "character": "Phan Phúc Lâm",
+      "passiveName": "Hổ Phụ Sinh Hổ Tử",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Phan Anh Minh.",
@@ -80,6 +85,7 @@
     {
       "id": "nguyen_trung_tin_same_team_nguyen_phuc_dieu_an",
       "character": "Nguyễn Trung Tín",
+      "passiveName": "Cha và Con",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Nguyễn Phúc Diệu An.",
@@ -101,6 +107,7 @@
     {
       "id": "nguyen_phuc_dieu_an_same_team_nguyen_trung_tin",
       "character": "Nguyễn Phúc Diệu An",
+      "passiveName": "Cha và Con",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Nguyễn Trung Tín.",
@@ -122,6 +129,7 @@
     {
       "id": "luong_trong_nhan_teammate_buff",
       "character": "Lương Trọng Nhân",
+      "passiveName": "Người Dẫn Dắt",
       "appliesTo": "each teammate whose Tổng Lực (base seed stats) is lower than his",
       "context": "teammates",
       "condition": "Per qualifying teammate, evaluated once lineups lock in.",
@@ -135,6 +143,7 @@
     {
       "id": "luong_trong_nhan_same_team_dang_kieu_diem",
       "character": "Lương Trọng Nhân",
+      "passiveName": "Anh Phải Che Mưa Cho Em",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Đặng Kiều Diễm — his share of the shared same-team bonus.",
@@ -145,6 +154,7 @@
     {
       "id": "luong_trong_nhan_opposing_dang_kieu_diem",
       "character": "Lương Trọng Nhân",
+      "passiveName": "Anh Đánh Nhẹ Mà",
       "appliesTo": "self",
       "context": "opposing",
       "condition": "Opposing Đặng Kiều Diễm.",
@@ -155,6 +165,7 @@
     {
       "id": "dang_kieu_diem_same_team_luong_trong_nhan",
       "character": "Đặng Kiều Diễm",
+      "passiveName": "Anh Phải Che Mưa Cho Em",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Lương Trọng Nhân — her share of the shared same-team bonus (stacks with dang_kieu_diem_luong_trong_nhan_present below).",
@@ -165,6 +176,7 @@
     {
       "id": "dang_kieu_diem_luong_trong_nhan_present",
       "character": "Đặng Kiều Diễm",
+      "passiveName": "Anh Đánh Nhẹ Mà",
       "appliesTo": "self",
       "context": "opponent_or_teammate_present",
       "condition": "Lương Trọng Nhân is anywhere in the match, either side — fires unconditionally on top of the same-team-only bonus above.",
@@ -175,6 +187,7 @@
     {
       "id": "phan_anh_minh_same_team_nguyen_kieu_hong_nhung",
       "character": "Phan Anh Minh",
+      "passiveName": "Trai Tài Gái Giỏi",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Nguyễn Kiều Hồng Nhung.",
@@ -186,6 +199,7 @@
     {
       "id": "nguyen_kieu_hong_nhung_same_team_phan_anh_minh",
       "character": "Nguyễn Kiều Hồng Nhung",
+      "passiveName": "Trai Tài Gái Giỏi",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Phan Anh Minh.",
@@ -197,6 +211,7 @@
     {
       "id": "phan_anh_minh_opposing_nguyen_kieu_hong_nhung",
       "character": "Phan Anh Minh",
+      "passiveName": "Sofa Championship",
       "appliesTo": "self",
       "context": "opposing",
       "condition": "Opposing Nguyễn Kiều Hồng Nhung.",
@@ -207,6 +222,7 @@
     {
       "id": "nguyen_kieu_hong_nhung_opposing_phan_anh_minh",
       "character": "Nguyễn Kiều Hồng Nhung",
+      "passiveName": "Sofa Championship",
       "appliesTo": "self",
       "context": "opposing",
       "condition": "Opposing Phan Anh Minh.",
@@ -221,6 +237,7 @@
     {
       "id": "tran_mai_khanh_same_team_ta_duc_thien",
       "character": "Trần Mai Khánh",
+      "passiveName": "Chông Vợ Hài",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Tạ Đức Thiện.",
@@ -235,6 +252,7 @@
     {
       "id": "ta_duc_thien_same_team_tran_mai_khanh",
       "character": "Tạ Đức Thiện",
+      "passiveName": "Chông Vợ Hài",
       "appliesTo": "self",
       "context": "same_team",
       "condition": "Same team as Trần Mai Khánh.",
@@ -249,6 +267,7 @@
     {
       "id": "tran_mai_khanh_opposing_ta_duc_thien",
       "character": "Trần Mai Khánh",
+      "passiveName": "Anh Khánh và Bé Thiện",
       "appliesTo": "self",
       "context": "opposing",
       "condition": "Opposing Tạ Đức Thiện.",
@@ -263,6 +282,7 @@
     {
       "id": "ta_duc_thien_opposing_tran_mai_khanh",
       "character": "Tạ Đức Thiện",
+      "passiveName": "Anh Khánh và Bé Thiện",
       "appliesTo": "self",
       "context": "opposing",
       "condition": "Opposing Trần Mai Khánh.",
@@ -277,6 +297,7 @@
     {
       "id": "ngo_dac_sy_phong_self_buff",
       "character": "Ngô Đắc Sỹ Phong",
+      "passiveName": "Đọ Tay",
       "appliesTo": "self",
       "context": "self",
       "condition": "At bout start, his opponent's defend_rate is higher than his own (effective pre-bout stats).",
@@ -287,6 +308,7 @@
     {
       "id": "ngo_dac_sy_phong_opponent_debuff",
       "character": "Ngô Đắc Sỹ Phong",
+      "passiveName": "Đọ Tay",
       "appliesTo": "his bout opponent",
       "context": "opponent",
       "condition": "Same trigger as ngo_dac_sy_phong_self_buff.",
@@ -301,6 +323,7 @@
     {
       "id": "phan_anh_minh_team_behind_buff",
       "character": "Phan Anh Minh",
+      "passiveName": "Năm Ngoái Nó Không Gặp Mình Nên...",
       "appliesTo": "his whole team, whoever is currently fighting",
       "context": "team",
       "condition": "His team is behind on the game's bout-win tally entering the current bout, OR behind on ippons within the current bout (re-checked live every exchange).",
@@ -312,6 +335,7 @@
     {
       "id": "lien_toan_self_jodan",
       "character": "Liên Toàn",
+      "passiveName": "Bậc Thầy Jodan",
       "appliesTo": "self",
       "context": "self",
       "condition": "Currently holding Jodan stance (live, re-checked every exchange).",
@@ -324,6 +348,7 @@
     {
       "id": "lien_toan_opponent_jodan",
       "character": "Liên Toàn",
+      "passiveName": "Bậc Thầy Jodan",
       "appliesTo": "his bout opponent",
       "context": "opponent",
       "condition": "Same trigger as lien_toan_self_jodan.",
@@ -334,6 +359,7 @@
     {
       "id": "nhi_nhi_excited",
       "character": "Nhi Nhi",
+      "passiveName": "Thất Thường Tâm Trạng",
       "appliesTo": "self",
       "context": "self",
       "condition": "\"Hưng phấn\" state — 70% odds at bout start, 50/50 on every re-roll after that (every ippon, either side).",
@@ -354,6 +380,7 @@
     {
       "id": "nhi_nhi_exhausted",
       "character": "Nhi Nhi",
+      "passiveName": "Thất Thường Tâm Trạng",
       "appliesTo": "self",
       "context": "self",
       "condition": "\"Kiệt sức\" state — the other side of the same roll as nhi_nhi_excited.",
@@ -369,6 +396,7 @@
     {
       "id": "tran_mai_khanh_win_carryforward",
       "character": "Trần Mai Khánh",
+      "passiveName": "Hịch Tướng Sỹ",
       "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
       "context": "teammates",
       "condition": "She wins her own individual bout. Never applies to the daihyosen tiebreak.",
@@ -383,6 +411,7 @@
     {
       "id": "nguyen_phuc_dieu_an_win_or_draw_carryforward",
       "character": "Nguyễn Phúc Diệu An",
+      "passiveName": "Mầm Non",
       "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
       "context": "teammates",
       "condition": "She wins OR draws her own individual bout. Never applies to the daihyosen tiebreak.",
@@ -397,6 +426,7 @@
     {
       "id": "nguyen_cao_bich_tram_loss_carryforward",
       "character": "Nguyễn Cao Bích Trâm",
+      "passiveName": "Quái Vật Thiên Tài",
       "appliesTo": "her team's not-yet-played teammates, for the rest of the game",
       "context": "teammates",
       "condition": "She loses her own individual bout. Never applies to the daihyosen tiebreak.",

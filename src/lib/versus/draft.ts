@@ -28,7 +28,7 @@
  */
 
 import type { AugmentTier } from "./augments";
-import { passiveHolderCapExclusions } from "./passives";
+import { PASSIVE_HOLDER_OFFER_WEIGHT, passiveHolderCapExclusions, passiveHolderFloorBoost } from "./passives";
 import type { Bout, Lineup, MatchLogEvent, TeamMatch } from "@/lib/kendo/types";
 
 export type Phase = 1 | 2 | 3;
@@ -158,14 +158,41 @@ function turnDeadline(now: number = Date.now()): string {
   return new Date(now + TURN_SECONDS * 1000).toISOString();
 }
 
-/** Fisher-Yates so every eligible player has equal odds, not just the head of the array. */
-export function rollPool(allIds: readonly string[], excludeIds: ReadonlySet<string>, count = 5): string[] {
-  const eligible = allIds.filter((id) => !excludeIds.has(id));
-  for (let i = eligible.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [eligible[i], eligible[j]] = [eligible[j], eligible[i]];
+/**
+ * Weighted sample without replacement — every eligible player gets equal
+ * odds (weight 1) unless `boostIds` raises theirs, in which case they're
+ * proportionally more likely to land in the offered pool without it ever
+ * being guaranteed (see passiveHolderFloorBoost: a side stuck at zero
+ * passive-holders gets its candidates boosted here rather than forced,
+ * since forcing would mean picking on a player's behalf). With an empty
+ * `boostIds` this is equivalent to (and replaces) the plain Fisher-Yates
+ * shuffle this used to be — draft rolls aren't seeded/replayed, so there's
+ * no determinism concern in changing the exact random-call sequence.
+ */
+export function rollPool(
+  allIds: readonly string[],
+  excludeIds: ReadonlySet<string>,
+  count = 5,
+  boostIds: ReadonlySet<string> = new Set(),
+): string[] {
+  const remaining = allIds.filter((id) => !excludeIds.has(id));
+  const weights = remaining.map((id) => (boostIds.has(id) ? PASSIVE_HOLDER_OFFER_WEIGHT : 1));
+
+  const pool: string[] = [];
+  const n = Math.min(count, remaining.length);
+  for (let picked = 0; picked < n; picked++) {
+    const total = weights.reduce((sum, w) => sum + w, 0);
+    let roll = Math.random() * total;
+    let idx = 0;
+    for (; idx < remaining.length - 1; idx++) {
+      roll -= weights[idx];
+      if (roll <= 0) break;
+    }
+    pool.push(remaining[idx]);
+    remaining.splice(idx, 1);
+    weights.splice(idx, 1);
   }
-  return eligible.slice(0, Math.min(count, eligible.length));
+  return pool;
 }
 
 export function initialDraftState(
@@ -176,12 +203,16 @@ export function initialDraftState(
   // pickedA/B are always empty at this point (a fresh draft), so
   // passiveHolderCapExclusions is a guaranteed no-op here — included only
   // for parity with applyPick's own phase-transition roll below.
+  // passiveHolderFloorBoost is NOT a no-op, though: both sides start at
+  // zero, so the very first roll of every draft already boosts
+  // passive-holder odds, giving the floor a head start from turn one.
   const excluded = new Set([...seriesExcluded, ...passiveHolderCapExclusions([], [])]);
+  const boosted = passiveHolderFloorBoost([], []);
   return {
     phase: 1,
     turnIndex: 0,
     picksRemainingInTurn: PHASE_TURNS[1][0].count,
-    pool: rollPool(allIds, excluded),
+    pool: rollPool(allIds, excluded, 5, boosted),
     pickedA: [],
     pickedB: [],
     turnDeadline: turnDeadline(),
@@ -230,11 +261,12 @@ export function applyPick(state: DraftState, side: DraftSide, candidateId: strin
       ...state.seriesExcluded,
       ...passiveHolderCapExclusions(pickedA, pickedB),
     ]);
+    const boosted = passiveHolderFloorBoost(pickedA, pickedB);
     return {
       phase: nextPhase,
       turnIndex: 0,
       picksRemainingInTurn: PHASE_TURNS[nextPhase][0].count,
-      pool: rollPool(allIds, drafted),
+      pool: rollPool(allIds, drafted, 5, boosted),
       pickedA,
       pickedB,
       turnDeadline: turnDeadline(),

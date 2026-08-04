@@ -8,14 +8,22 @@ import { useTapReveal } from "@/components/versus/useTapReveal";
 
 /**
  * Wraps a player's displayed name with a detail card breaking down every
- * stat as base value + any augment/item bonus, colored green (helps them)
- * or red (hurts them) — e.g. "Men (đòn đánh) 92 +5" in green. `base` is the
- * player's raw, unmodified stats (before any augment/item); `bonus` is the
- * already-summed total delta for this one player this game (their own
- * side's qualifying augments, any opp. crossover landing on them, and their
- * own equipped item) — see resolvePlayerBonuses in versus/bout.ts. Lets a
- * player visually confirm the stacking/gating logic actually did what it
- * claims, not just trust the badge names.
+ * stat as base value + any augment/item/passive bonus, colored green (helps
+ * them) or red (hurts them) — e.g. "Men (đòn đánh) 92 +5" in green. `base` is
+ * the player's raw, unmodified stats (before any augment/item/passive);
+ * `bonus` is the already-summed STATIC total delta for this one player this
+ * game (their own side's qualifying augments, any opp. crossover landing on
+ * them, their own equipped item, and category-A passive effects — see
+ * resolvePlayerBonuses in versus/bout.ts). `liveBonus`, separately, is
+ * whatever a live/conditional passive hook (categories B-F) is CURRENTLY
+ * contributing as of the narration's current point — e.g. Phan Anh Minh's
+ * team-behind buff is only in `liveBonus` while his team is actually behind,
+ * so it reads 0 otherwise and appears the moment that flips, exchange by
+ * exchange, without this component doing any of that computation itself
+ * (see SideBlock in BoutResultBoard, which derives it from the same
+ * Exchange.liveModifierA/B the bout simulator itself rolled hits against).
+ * The net total at the top sums bonus+liveBonus into one glanceable +N/-N,
+ * so a buff/debuff is actually verifiable instead of just trusted by name.
  *
  * Tap/click is the primary trigger (mobile has no hover state); hover is a
  * bonus on top for desktop — see useTapReveal. Rendered through a portal —
@@ -27,11 +35,16 @@ export function PlayerHoverCard({
   name,
   base,
   bonus,
+  liveBonus,
   className = "",
 }: {
   name: string;
   base: Player;
   bonus: Partial<Record<StatPath, number>>;
+  /** Currently-active live/conditional passive contribution, if any — see
+   *  the component doc comment above. Omit entirely where there's no live
+   *  hook machinery to read from (draft/lineup phases). */
+  liveBonus?: Partial<Record<StatPath, number>>;
   className?: string;
 }) {
   const { visible, pos, triggerRef, popoverRef, triggerProps } = useTapReveal<HTMLSpanElement>();
@@ -40,8 +53,10 @@ export function PlayerHoverCard({
     path,
     label: STAT_LABELS[path],
     baseValue: readStat(base, path),
-    delta: bonus[path] ?? 0,
+    delta: (bonus[path] ?? 0) + (liveBonus?.[path] ?? 0),
   }));
+  const netTotal = rows.reduce((sum, r) => sum + r.delta, 0);
+  const netTone = netTotal > 0 ? "text-forest-500" : netTotal < 0 ? "text-blood" : "text-bone-faint";
 
   return (
     <>
@@ -61,7 +76,13 @@ export function PlayerHoverCard({
             className="hex-tab pointer-events-none fixed z-50 w-56 -translate-x-1/2 bg-card px-3 py-2 text-left shadow-lg"
             style={{ top: pos.top, left: pos.left }}
           >
-            <p className="display mb-1 text-xs text-brass-600">{name}</p>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <p className="display text-xs text-brass-600">{name}</p>
+              <p className={`display text-xs tabular-nums ${netTone}`}>
+                {netTotal > 0 ? "+" : ""}
+                {netTotal}
+              </p>
+            </div>
             <dl className="flex flex-col gap-0.5">
               {rows.map((r) => (
                 <div key={r.path} className="flex items-center justify-between gap-2 text-[11px]">

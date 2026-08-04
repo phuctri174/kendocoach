@@ -191,6 +191,14 @@ export interface Exchange {
    *  on Exchange: the passive's actual stat effect is already baked into
    *  the exchange's own rolls by the time this is attached. */
   passiveEvents?: { side: Side; text: string }[];
+  /** The raw per-exchange delta `dynamicModifier` (augments/passives' live
+   *  hooks) contributed for this exchange, if any — the same values already
+   *  folded into this exchange's own rolls, exposed as data so the UI can
+   *  show a player's current net stat-modifier total without re-deriving
+   *  it. Absent (not zero) when no live hook is contributing that exchange,
+   *  e.g. Phan Anh Minh's team-behind buff between the moments it applies. */
+  liveModifierA?: Partial<Record<StatPath, number>>;
+  liveModifierB?: Partial<Record<StatPath, number>>;
   /** Sides that picked up a fatigue debuff at the end of this exchange. */
   fatigueTriggers?: Side[];
   /** 0-1 performance debuff in effect during this exchange. */

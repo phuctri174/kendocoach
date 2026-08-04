@@ -7,6 +7,11 @@ import { STAT_PATHS, type StatPath } from "@/lib/kendo/types";
 export interface SeedPassiveEntry {
   id: string;
   character: string;
+  /** Display name, shown highlighted in the UI's detail popover. Entries
+   *  that are facets of one ability share the same passiveName on purpose
+   *  (the UI groups a character's entries into one block per distinct
+   *  name) — see the catalog's own top-level `_note`. */
+  passiveName: string;
   appliesTo: string;
   context: string;
   condition: string;
@@ -39,6 +44,9 @@ export function loadPassiveCatalog(seed: SeedPassiveEntry[]): Map<string, Passiv
     const character = typeof entry?.character === "string" ? entry.character.trim() : "";
     if (!character) fail(index, id, "character is required");
 
+    const passiveName = typeof entry?.passiveName === "string" ? entry.passiveName.trim() : "";
+    if (!passiveName) fail(index, id, "passiveName is required");
+
     const appliesTo = typeof entry?.appliesTo === "string" ? entry.appliesTo.trim() : "";
     if (!appliesTo) fail(index, id, "appliesTo is required");
 
@@ -70,7 +78,7 @@ export function loadPassiveCatalog(seed: SeedPassiveEntry[]): Map<string, Passiv
       }
     }
 
-    byId.set(id, { id, character, appliesTo, context, condition, effects });
+    byId.set(id, { id, character, passiveName, appliesTo, context, condition, effects });
   });
 
   return byId;

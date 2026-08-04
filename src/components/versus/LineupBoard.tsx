@@ -182,17 +182,19 @@ export function LineupBoard({
                     <span className="display text-[10px] text-brass-600 sm:text-xs">
                       {i + 1} · {position}
                     </span>
-                    {base ? (
-                      <PlayerHoverCard
-                        className="display text-xs text-bone sm:text-base"
-                        name={NAME_BY_ID.get(playerId) ?? playerId}
-                        base={base}
-                        bonus={bonusFor(playerId, equipped)}
-                      />
-                    ) : (
-                      <span className="display text-xs text-bone sm:text-base">{NAME_BY_ID.get(playerId) ?? playerId}</span>
-                    )}
-                    <PassiveBadge playerId={playerId} />
+                    <div className="flex items-center gap-1">
+                      {base ? (
+                        <PlayerHoverCard
+                          className="display text-xs text-bone sm:text-base"
+                          name={NAME_BY_ID.get(playerId) ?? playerId}
+                          base={base}
+                          bonus={bonusFor(playerId, equipped)}
+                        />
+                      ) : (
+                        <span className="display text-xs text-bone sm:text-base">{NAME_BY_ID.get(playerId) ?? playerId}</span>
+                      )}
+                      <PassiveBadge playerId={playerId} />
+                    </div>
                     <div className="flex flex-wrap justify-center gap-0.5">
                       {badgesFor(playerId, equipped).map((b, idx) => (
                         <EquipBadge key={idx} equip={b} />
@@ -245,17 +247,19 @@ export function LineupBoard({
                         <span className="display text-[10px] text-brass-600 sm:text-xs">
                           {i + 1} · {position}
                         </span>
-                        {base ? (
-                          <PlayerHoverCard
-                            className="display text-xs text-bone sm:text-base"
-                            name={NAME_BY_ID.get(playerId) ?? playerId}
-                            base={base}
-                            bonus={bonusFor(playerId, equipped)}
-                          />
-                        ) : (
-                          <span className="display text-xs text-bone sm:text-base">{NAME_BY_ID.get(playerId) ?? playerId}</span>
-                        )}
-                        <PassiveBadge playerId={playerId} />
+                        <div className="flex items-center gap-1">
+                          {base ? (
+                            <PlayerHoverCard
+                              className="display text-xs text-bone sm:text-base"
+                              name={NAME_BY_ID.get(playerId) ?? playerId}
+                              base={base}
+                              bonus={bonusFor(playerId, equipped)}
+                            />
+                          ) : (
+                            <span className="display text-xs text-bone sm:text-base">{NAME_BY_ID.get(playerId) ?? playerId}</span>
+                          )}
+                          <PassiveBadge playerId={playerId} />
+                        </div>
                         <div className="flex flex-wrap justify-center gap-0.5">
                           {augmentBadges.map((b, idx) => (
                             <EquipBadge key={`aug-${idx}`} equip={b} />

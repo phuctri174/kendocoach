@@ -304,6 +304,8 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
         activeAugmentIdsB,
         itemEquipsA: game.item_equips_a,
         itemEquipsB: game.item_equips_b,
+        lineupA: game.lineup_a,
+        lineupB: game.lineup_b,
       })
     : new Map<string, Partial<Record<StatPath, number>>>();
   const mapToRecord = (m: Map<string, Partial<Record<StatPath, number>>>) => Object.fromEntries(m);
@@ -488,7 +490,7 @@ export default function MatchPage({ params }: { params: Promise<{ matchId: strin
   }
 
   return (
-    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6 sm:pb-16">
+    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
       <header className="shrink-0 flex flex-col items-center gap-1 text-center">
         <p className="display text-xs text-brass-600">Đấu đối kháng · {match.format === "bo3" ? "Bo3" : "Bo5"}</p>
         <h2 className="display text-xl text-bone sm:text-2xl">

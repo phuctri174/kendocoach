@@ -43,6 +43,12 @@ function idOf(name: string): string {
   return person.id;
 }
 
+/** Name lookups for activation log notes fired from hooks that don't
+ *  already have a `Player` object on hand for the owner specifically (e.g.
+ *  Phan Anh Minh's team-wide buff can fire while a teammate is fighting, and
+ *  carry-forward's owner may not be in the current bout at all). */
+const NAME_BY_ID = new Map(CLUB_ROSTER.map((p) => [p.id, p.name]));
+
 const ID = {
   dangKieuDiem: idOf("Đặng Kiều Diễm"),
   kaNguyet: idOf("Ka Nguyệt"),
@@ -61,55 +67,189 @@ const ID = {
   nguyenCaoBichTram: idOf("Nguyễn Cao Bích Trâm"),
 } as const;
 
-/** Full "Nội tại" text, shown on click/hover under a character's name
- *  wherever they're displayed (draft, lineup, match viewer). */
-export const PASSIVE_DESCRIPTION_BY_ID: Record<string, string> = {
-  [ID.dangKieuDiem]:
-    "Nếu được xếp ở vị trí Taisho: tăng toàn bộ chỉ số (tấn công, phòng thủ, kĩ thuật, phòng thủ kĩ thuật, thể lực) và giảm tỉ lệ phạm luật cho bản thân. " +
-    "Nếu Lương Trọng Nhân cùng góp mặt trong trận: cùng đội thì cả hai tăng chỉ số tấn công; khác đội thì bản thân vẫn tăng chỉ số tấn công.",
-  [ID.kaNguyet]: "Nếu được xếp ở vị trí Senpo: tăng chỉ số tấn công, kĩ thuật Men và kĩ thuật Dou cho bản thân.",
-  [ID.tranThuyBaoNhu]:
-    "Nếu được xếp ở vị trí Chuken hoặc Taisho: đối thủ ở trận đấu đó bị giảm thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật.",
-  [ID.phanAnhMinh]:
-    "Cùng đội với Phan Phúc Lâm: cả hai tăng chỉ số phòng thủ và phòng thủ kĩ thuật. " +
-    "Cùng đội với Nguyễn Kiều Hồng Nhung: cả hai tăng thể lực, giảm tỉ lệ phạm luật; khác đội thì bản thân giảm chỉ số tấn công. " +
-    "Khi đội nhà đang thua về số trận thắng (hoặc đang thua điểm trong trận đang đấu): toàn đội tăng chỉ số tấn công và thể lực, tính lại liên tục theo từng pha đấu.",
-  [ID.phanPhucLam]: "Cùng đội với Phan Anh Minh: cả hai tăng chỉ số phòng thủ và phòng thủ kĩ thuật.",
-  [ID.nguyenTrungTin]:
-    "Cùng đội với Nguyễn Phúc Diệu An: cả hai tăng chỉ số tấn công, phòng thủ, kĩ thuật, phòng thủ kĩ thuật, thể lực — nhưng cũng tăng tỉ lệ phạm luật.",
-  [ID.nguyenPhucDieuAn]:
-    "Cùng đội với Nguyễn Trung Tín: cả hai tăng chỉ số tấn công, phòng thủ, kĩ thuật, phòng thủ kĩ thuật, thể lực — nhưng cũng tăng tỉ lệ phạm luật. " +
-    "Nếu thắng hoặc hòa trận của mình: các đồng đội chưa thi đấu tăng chỉ số tấn công và kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
-  [ID.luongTrongNhan]:
-    "Với mỗi đồng đội có Tổng Lực thấp hơn bản thân: đồng đội đó được tăng kĩ thuật. " +
-    "Nếu Đặng Kiều Diễm cùng góp mặt trong trận: cùng đội thì cả hai tăng chỉ số tấn công; khác đội thì bản thân giảm chỉ số phòng thủ.",
-  [ID.nguyenKieuHongNhung]:
-    "Cùng đội với Phan Anh Minh: cả hai tăng thể lực, giảm tỉ lệ phạm luật; khác đội thì bản thân tăng chỉ số tấn công và kĩ thuật.",
-  [ID.tranMaiKhanh]:
-    "Cùng đội với Tạ Đức Thiện: cả hai tăng chỉ số tấn công và kĩ thuật; khác đội thì bản thân giảm chỉ số tấn công và kĩ thuật. " +
-    "Nếu thắng trận của mình: các đồng đội chưa thi đấu tăng kĩ thuật và thể lực cho phần còn lại của ván (không áp dụng cho daihyosen).",
-  [ID.taDucThien]:
-    "Cùng đội với Trần Mai Khánh: cả hai tăng chỉ số tấn công và kĩ thuật; khác đội thì bản thân giảm chỉ số phòng thủ và phòng thủ kĩ thuật.",
-  [ID.ngoDacSyPhong]:
-    "Đầu mỗi trận đấu, nếu chỉ số phòng thủ của đối thủ cao hơn bản thân: đối thủ bị giảm chỉ số phòng thủ và phòng thủ kĩ thuật, bản thân tăng chỉ số tấn công.",
-  [ID.lienToan]:
-    "Trong lúc giữ thế JODAN: tăng kĩ thuật Men và Kote cho bản thân; đồng thời bản thân và đối thủ cùng bị giảm chỉ số phòng thủ.",
-  [ID.nhiNhi]:
-    "Ngẫu nhiên rơi vào 1 trong 2 trạng thái, đổi lại mỗi khi có ippon (của bên nào cũng được) trong trận của cô ấy: " +
-    "\"Hưng phấn\" (tăng toàn bộ chỉ số) hoặc \"Kiệt sức\" (giảm chỉ số phòng thủ, phòng thủ kĩ thuật, thể lực).",
-  [ID.nguyenCaoBichTram]:
-    "Nếu thua trận của mình: các đồng đội chưa thi đấu tăng thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
+export interface PassiveBlock {
+  /** Matches a passiveName in passives_catalog.json — shown highlighted in
+   *  the detail popover as this block's own sub-heading. */
+  name: string;
+  text: string;
+}
+
+/**
+ * Full "Nội tại" text, shown on click/hover beside a character's name
+ * wherever they're displayed (draft, lineup, match viewer) — grouped into
+ * one block per distinct ability (see PassiveBadge), not one flat paragraph,
+ * so a character with several unrelated behaviors (e.g. Phan Anh Minh's
+ * three) reads as clearly separated sections. Block names here are
+ * hand-written to match the corresponding entries' passiveName in
+ * passives_catalog.json exactly — kept as prose here rather than derived
+ * from the catalog's own (English, developer-facing) `condition` field.
+ */
+export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
+  [ID.dangKieuDiem]: [
+    {
+      name: "Bản Lĩnh Nữ Hoàng",
+      text: "Nếu được xếp ở vị trí Taisho: tăng toàn bộ chỉ số (tấn công, phòng thủ, kĩ thuật, phòng thủ kĩ thuật, thể lực) và giảm tỉ lệ phạm luật cho bản thân.",
+    },
+    {
+      name: "Anh Phải Che Mưa Cho Em",
+      text: "Nếu Lương Trọng Nhân cùng đội: cả hai tăng chỉ số tấn công.",
+    },
+    {
+      name: "Anh Đánh Nhẹ Mà",
+      text: "Nếu Lương Trọng Nhân cùng góp mặt trong trận, dù cùng đội hay khác đội: bản thân tăng chỉ số tấn công.",
+    },
+  ],
+
+  [ID.kaNguyet]: [
+    {
+      name: "Gà Chiến",
+      text: "Nếu được xếp ở vị trí Senpo: tăng chỉ số tấn công, kĩ thuật Men và kĩ thuật Dou cho bản thân.",
+    },
+  ],
+
+  [ID.tranThuyBaoNhu]: [
+    {
+      name: "Đương Kim Vô Địch",
+      text: "Nếu được xếp ở vị trí Chuken hoặc Taisho: đối thủ ở trận đấu đó bị giảm thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật.",
+    },
+  ],
+
+  [ID.phanAnhMinh]: [
+    {
+      name: "Hổ Phụ Sinh Hổ Tử",
+      text: "Cùng đội với Phan Phúc Lâm: cả hai tăng chỉ số phòng thủ và phòng thủ kĩ thuật.",
+    },
+    {
+      name: "Trai Tài Gái Giỏi",
+      text: "Cùng đội với Nguyễn Kiều Hồng Nhung: cả hai tăng thể lực và giảm tỉ lệ phạm luật.",
+    },
+    {
+      name: "Sofa Championship",
+      text: "Khác đội với Nguyễn Kiều Hồng Nhung: bản thân giảm chỉ số tấn công.",
+    },
+    {
+      name: "Năm Ngoái Nó Không Gặp Mình Nên...",
+      text: "Khi đội nhà đang thua về số trận thắng (hoặc đang thua điểm trong trận đang đấu): toàn đội tăng chỉ số tấn công và thể lực, tính lại liên tục theo từng pha đấu.",
+    },
+  ],
+
+  [ID.phanPhucLam]: [
+    {
+      name: "Hổ Phụ Sinh Hổ Tử",
+      text: "Cùng đội với Phan Anh Minh: cả hai tăng chỉ số phòng thủ và phòng thủ kĩ thuật.",
+    },
+  ],
+
+  [ID.nguyenTrungTin]: [
+    {
+      name: "Cha và Con",
+      text: "Cùng đội với Nguyễn Phúc Diệu An: cả hai tăng chỉ số tấn công, phòng thủ, kĩ thuật, phòng thủ kĩ thuật, thể lực — nhưng cũng tăng tỉ lệ phạm luật.",
+    },
+  ],
+
+  [ID.nguyenPhucDieuAn]: [
+    {
+      name: "Cha và Con",
+      text: "Cùng đội với Nguyễn Trung Tín: cả hai tăng chỉ số tấn công, phòng thủ, kĩ thuật, phòng thủ kĩ thuật, thể lực — nhưng cũng tăng tỉ lệ phạm luật.",
+    },
+    {
+      name: "Mầm Non",
+      text: "Nếu thắng hoặc hòa trận của mình: các đồng đội chưa thi đấu tăng chỉ số tấn công và kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
+    },
+  ],
+
+  [ID.luongTrongNhan]: [
+    {
+      name: "Người Dẫn Dắt",
+      text: "Với mỗi đồng đội có Tổng Lực thấp hơn bản thân: đồng đội đó được tăng kĩ thuật.",
+    },
+    {
+      name: "Anh Phải Che Mưa Cho Em",
+      text: "Cùng đội với Đặng Kiều Diễm: cả hai tăng chỉ số tấn công.",
+    },
+    {
+      name: "Anh Đánh Nhẹ Mà",
+      text: "Khác đội với Đặng Kiều Diễm: bản thân giảm chỉ số phòng thủ.",
+    },
+  ],
+
+  [ID.nguyenKieuHongNhung]: [
+    {
+      name: "Trai Tài Gái Giỏi",
+      text: "Cùng đội với Phan Anh Minh: cả hai tăng thể lực và giảm tỉ lệ phạm luật.",
+    },
+    {
+      name: "Sofa Championship",
+      text: "Khác đội với Phan Anh Minh: bản thân tăng chỉ số tấn công và kĩ thuật.",
+    },
+  ],
+
+  [ID.tranMaiKhanh]: [
+    {
+      name: "Chông Vợ Hài",
+      text: "Cùng đội với Tạ Đức Thiện: cả hai tăng chỉ số tấn công và kĩ thuật.",
+    },
+    {
+      name: "Anh Khánh và Bé Thiện",
+      text: "Khác đội với Tạ Đức Thiện: bản thân giảm chỉ số tấn công và kĩ thuật.",
+    },
+    {
+      name: "Hịch Tướng Sỹ",
+      text: "Nếu thắng trận của mình: các đồng đội chưa thi đấu tăng kĩ thuật và thể lực cho phần còn lại của ván (không áp dụng cho daihyosen).",
+    },
+  ],
+
+  [ID.taDucThien]: [
+    {
+      name: "Chông Vợ Hài",
+      text: "Cùng đội với Trần Mai Khánh: cả hai tăng chỉ số tấn công và kĩ thuật.",
+    },
+    {
+      name: "Anh Khánh và Bé Thiện",
+      text: "Khác đội với Trần Mai Khánh: bản thân giảm chỉ số phòng thủ và phòng thủ kĩ thuật.",
+    },
+  ],
+
+  [ID.ngoDacSyPhong]: [
+    {
+      name: "Đọ Tay",
+      text: "Đầu mỗi trận đấu, nếu chỉ số phòng thủ của đối thủ cao hơn bản thân: đối thủ bị giảm chỉ số phòng thủ và phòng thủ kĩ thuật, bản thân tăng chỉ số tấn công.",
+    },
+  ],
+
+  [ID.lienToan]: [
+    {
+      name: "Bậc Thầy Jodan",
+      text: "Trong lúc giữ thế JODAN: tăng kĩ thuật Men và Kote cho bản thân; đồng thời bản thân và đối thủ cùng bị giảm chỉ số phòng thủ.",
+    },
+  ],
+
+  [ID.nhiNhi]: [
+    {
+      name: "Thất Thường Tâm Trạng",
+      text:
+        "Ngẫu nhiên rơi vào 1 trong 2 trạng thái, đổi lại mỗi khi có ippon (của bên nào cũng được) trong trận của cô ấy: " +
+        "\"Hưng phấn\" (tăng toàn bộ chỉ số) hoặc \"Kiệt sức\" (giảm chỉ số phòng thủ, phòng thủ kĩ thuật, thể lực).",
+    },
+  ],
+
+  [ID.nguyenCaoBichTram]: [
+    {
+      name: "Quái Vật Thiên Tài",
+      text: "Nếu thua trận của mình: các đồng đội chưa thi đấu tăng thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
+    },
+  ],
 };
 
-/** Anyone with a "Nội tại" entry — drives the small label under a name. */
+/** Anyone with a "Nội tại" entry — drives the small icon beside a name. */
 export function hasPassive(playerId: string): boolean {
-  return playerId in PASSIVE_DESCRIPTION_BY_ID;
+  return playerId in PASSIVE_BLOCKS_BY_CHARACTER_ID;
 }
 
 /** Every character id that has at least one passive — the draft pool's
  *  "cap at 2 passive-holders per roster" rule (see draft.ts) filters
  *  candidates against this set. */
-export const PASSIVE_HOLDER_IDS: ReadonlySet<string> = new Set(Object.keys(PASSIVE_DESCRIPTION_BY_ID));
+export const PASSIVE_HOLDER_IDS: ReadonlySet<string> = new Set(Object.keys(PASSIVE_BLOCKS_BY_CHARACTER_ID));
 
 /** Max passive-holding characters allowed on one 5-person roster, both
  *  formats (Bo3/Bo5) — a draft rule, not a stat-effect concern, but lives
@@ -143,6 +283,35 @@ export function passiveHolderCapExclusions(
   const isCapped = (picked: readonly string[]) =>
     picked.filter((id) => PASSIVE_HOLDER_IDS.has(id)).length >= PASSIVE_ROSTER_CAP;
   return isCapped(pickedA) || isCapped(pickedB) ? PASSIVE_HOLDER_IDS : new Set();
+}
+
+/** How many times more likely a passive-holder is to land in the offered
+ *  pool while a side is still at zero, relative to a plain candidate (see
+ *  passiveHolderFloorBoost) — a nudge, not a guarantee. */
+export const PASSIVE_HOLDER_OFFER_WEIGHT = 4;
+
+/**
+ * Draft-pool floor: there's no way to strictly GUARANTEE a side ends up
+ * with at least one passive-holder without either forcing a pick on their
+ * behalf or restricting their offer to passive-holders only — both remove
+ * player choice. Instead, while a side still has zero passive-holders
+ * drafted, this boosts the weighting so they're more likely (not certain)
+ * to appear in the next roll's offered pool — same rollPool call, an
+ * additional weight instead of an exclusion.
+ *
+ * Same phase-roll-granularity caveat as passiveHolderCapExclusions above
+ * (the pool is shared across both sides' turns within a phase): if either
+ * side is still at zero, this roll's passive-holders get boosted for
+ * everyone sharing it, not just the side that needs it. It also defers
+ * entirely to the cap when the two collide (e.g. side A is at zero while
+ * side B is already capped, sharing the same roll) — passiveHolderCapExclusions
+ * removes passive-holders from the eligible list before any weighting is
+ * even computed, so there's nothing left to boost; the cap wins that
+ * conflict rather than fighting it.
+ */
+export function passiveHolderFloorBoost(pickedA: readonly string[], pickedB: readonly string[]): ReadonlySet<string> {
+  const hasNone = (picked: readonly string[]) => !picked.some((id) => PASSIVE_HOLDER_IDS.has(id));
+  return hasNone(pickedA) || hasNone(pickedB) ? PASSIVE_HOLDER_IDS : new Set();
 }
 
 type Effects = Partial<Record<StatPath, number>>;
@@ -332,7 +501,14 @@ function makeNgoDacSyPhongHook(playerA: Player, playerB: Player): LiveModifierHo
   if (opponent.defend_rate <= self.defend_rate) return undefined;
   const selfBuff = effectsFor("ngo_dac_sy_phong_self_buff");
   const opponentDebuff = effectsFor("ngo_dac_sy_phong_opponent_debuff");
-  return () => (side === "A" ? { a: selfBuff, b: opponentDebuff } : { a: opponentDebuff, b: selfBuff });
+  // Fixed for the whole bout (the comparison only ever happens once, at
+  // hook-build time) — announce once, on the first exchange, not every one.
+  let announced = false;
+  return () => {
+    const notes = announced ? undefined : [{ side, text: `${self.name} đã kích hoạt nội tại.` }];
+    announced = true;
+    return side === "A" ? { a: selfBuff, b: opponentDebuff, notes } : { a: opponentDebuff, b: selfBuff, notes };
+  };
 }
 
 /** C: Phan Anh Minh — team-wide (not just his own bout), live per exchange.
@@ -348,10 +524,20 @@ function makePhanAnhMinhTeamHook(
   if (!side) return undefined;
   const behindOnTeam = side === "A" ? teamAWinsSoFar < teamBWinsSoFar : teamBWinsSoFar < teamAWinsSoFar;
   const buff = effectsFor("phan_anh_minh_team_behind_buff");
+  const ownerName = NAME_BY_ID.get(ID.phanAnhMinh) ?? "Phan Anh Minh";
+  // Re-checked live every exchange (behindOnBout can flip back and forth) —
+  // announce on every false->true transition (newly active is worth noting
+  // again each time, since it's a real "the team fell behind again" event),
+  // but never repeats while it stays continuously active.
+  let wasActive = behindOnTeam;
   return (state) => {
     const behindOnBout = side === "A" ? state.ipponsA < state.ipponsB : state.ipponsB < state.ipponsA;
-    if (!behindOnTeam && !behindOnBout) return undefined;
-    return side === "A" ? { a: buff } : { b: buff };
+    const isActive = behindOnTeam || behindOnBout;
+    const justActivated = isActive && !wasActive;
+    wasActive = isActive;
+    if (!isActive) return undefined;
+    const notes = justActivated ? [{ side, text: `${ownerName} đã kích hoạt nội tại.` }] : undefined;
+    return side === "A" ? { a: buff, notes } : { b: buff, notes };
   };
 }
 
@@ -364,10 +550,18 @@ function makeLienToanHook(playerA: Player, playerB: Player): LiveModifierHook | 
   else return undefined;
   const self = effectsFor("lien_toan_self_jodan");
   const opponent = effectsFor("lien_toan_opponent_jodan");
+  const ownerName = side === "A" ? playerA.name : playerB.name;
+  // Stance can switch back and forth (post-ippon reconsider) — announce on
+  // every re-entry into Jodan, not every exchange he stays in it.
+  let wasActive = false;
   return (state) => {
     const myStance = side === "A" ? state.stanceA : state.stanceB;
-    if (myStance !== "Jodan") return undefined;
-    return side === "A" ? { a: self, b: opponent } : { a: opponent, b: self };
+    const isActive = myStance === "Jodan";
+    const justActivated = isActive && !wasActive;
+    wasActive = isActive;
+    if (!isActive) return undefined;
+    const notes = justActivated ? [{ side, text: `${ownerName} đã kích hoạt nội tại.` }] : undefined;
+    return side === "A" ? { a: self, b: opponent, notes } : { a: opponent, b: self, notes };
   };
 }
 
@@ -465,17 +659,29 @@ function makeCarryForwardHook(
   boutsSoFar: readonly Bout[],
 ): LiveModifierHook | undefined {
   const perSide: Record<Side, Effects[]> = { A: [], B: [] };
+  // One note per triggering character (there can be more than one on the
+  // same team, e.g. both Trần Mai Khánh's win AND Nguyễn Cao Bích Trâm's
+  // loss already landed earlier this game) — fixed for the whole bout
+  // (boutsSoFar doesn't change mid-bout), so announce once on the first
+  // exchange, not every one.
+  const activationNotes: { side: Side; text: string }[] = [];
   for (const spec of CARRY_FORWARD_SPECS) {
     const side: Side | null = pickedA.includes(spec.id) ? "A" : pickedB.includes(spec.id) ? "B" : null;
     if (!side) continue;
     const result = resultFor(spec.id, boutsSoFar);
     if (result === undefined || !spec.condition(result)) continue;
     perSide[side].push(effectsFor(spec.catalogId));
+    activationNotes.push({ side, text: `${NAME_BY_ID.get(spec.id) ?? spec.id} đã kích hoạt nội tại.` });
   }
   const aEffects = perSide.A.length ? merge(...perSide.A) : undefined;
   const bEffects = perSide.B.length ? merge(...perSide.B) : undefined;
   if (!aEffects && !bEffects) return undefined;
-  return () => ({ a: aEffects, b: bEffects });
+  let announced = false;
+  return () => {
+    const notes = announced ? undefined : activationNotes;
+    announced = true;
+    return { a: aEffects, b: bEffects, notes };
+  };
 }
 
 /** Cheap pre-check so buildLiveModifierForGame can skip building anything at

@@ -300,11 +300,15 @@ export function simulateBout(
     let effStatsA = statsA;
     let effStatsB = statsB;
     let livePassiveNotes: { side: Side; text: string }[] | undefined;
+    let liveModifierA: StyleModifier | undefined;
+    let liveModifierB: StyleModifier | undefined;
     if (options.dynamicModifier) {
       const live = options.dynamicModifier({ exchangeIndex: i, ipponsA, ipponsB, stanceA, stanceB, rng });
       if (live?.a) effStatsA = applyStyleModifier(statsA, live.a);
       if (live?.b) effStatsB = applyStyleModifier(statsB, live.b);
       if (live?.notes?.length) livePassiveNotes = live.notes;
+      liveModifierA = live?.a;
+      liveModifierB = live?.b;
     }
 
     const initiator: Side = rng.weighted(
@@ -397,6 +401,8 @@ export function simulateBout(
       scoreAfter: { a: ipponsA, b: ipponsB },
       stance: { a: stanceA, b: stanceB },
       fatigue: { a: fatA, b: fatB },
+      liveModifierA,
+      liveModifierB,
       hitChance: pHit,
       counterChance: pCounter,
       passiveEvents: livePassiveNotes,

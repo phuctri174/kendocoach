@@ -262,6 +262,11 @@ export function resolvePlayerBonuses(options: {
   activeAugmentIdsB: readonly string[];
   itemEquipsA: readonly ItemEquip[];
   itemEquipsB: readonly ItemEquip[];
+  /** Category-A (static) passive effects only get folded in once both
+   *  lineups are known — undefined during the draft/augment/item phases,
+   *  when there's nothing to pass yet. */
+  lineupA?: Lineup | null;
+  lineupB?: Lineup | null;
 }): Map<string, Partial<Record<StatPath, number>>> {
   const {
     pickedA,
@@ -272,6 +277,8 @@ export function resolvePlayerBonuses(options: {
     activeAugmentIdsB,
     itemEquipsA,
     itemEquipsB,
+    lineupA,
+    lineupB,
   } = options;
 
   const resolvedA = sumEffects(
@@ -292,6 +299,14 @@ export function resolvePlayerBonuses(options: {
     if (!item) continue;
     map.set(eq.targetPlayerId, sumEffects([map.get(eq.targetPlayerId) ?? {}, item.effects]));
   }
+
+  if (lineupA && lineupB) {
+    const passiveEffects = resolvePassiveStaticEffects({ pickedA, pickedB, lineupA, lineupB, rawPlayersA, rawPlayersB });
+    for (const [id, effects] of passiveEffects) {
+      map.set(id, sumEffects([map.get(id) ?? {}, effects]));
+    }
+  }
+
   return map;
 }
 

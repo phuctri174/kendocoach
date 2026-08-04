@@ -367,6 +367,8 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
         activeAugmentIdsB,
         itemEquipsA: game.item_equips_a,
         itemEquipsB: game.item_equips_b,
+        lineupA: game.lineup_a,
+        lineupB: game.lineup_b,
       })
     : new Map<string, Partial<Record<StatPath, number>>>();
   const bonusByPlayer = Object.fromEntries(fullBonusByPlayer);
@@ -440,7 +442,7 @@ export default function SpectatePage({ params }: { params: Promise<{ matchId: st
   }
 
   return (
-    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6 sm:pb-16">
+    <section className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col items-center gap-4 sm:gap-6">
       <header className="flex shrink-0 flex-col items-center gap-1 text-center">
         <p className="display text-xs text-brass-600">
           Đấu đối kháng · {match.format === "bo3" ? "Bo3" : "Bo5"} · Đang xem
