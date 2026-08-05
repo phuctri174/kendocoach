@@ -616,13 +616,13 @@
     ],
     "baseStats": {
       "technique": {
-        "men": 70,
+        "men": 75,
         "kote": 75,
         "dou": 60,
         "tsuki": 5
       },
       "defense": {
-        "men": 60,
+        "men": 65,
         "kote": 65,
         "dou": 65,
         "tsuki": 50

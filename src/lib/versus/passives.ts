@@ -67,6 +67,7 @@ const ID = {
   nguyenCaoBichTram: idOf("Nguyễn Cao Bích Trâm"),
   hoangMinhChau: idOf("Hoàng Minh Châu"),
   nguyenHoangMinhTam: idOf("Nguyễn Hoàng Minh Tâm"),
+  dinhNguyenLong: idOf("Đinh Nguyên Long"),
 } as const;
 
 /** Base-stats lookup — Hoàng Minh Châu's Tổng Lực comparison deliberately
@@ -258,6 +259,13 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
     {
       name: "Độc Hành",
       text: "Anh không ảnh hưởng bởi bất kì hiệu ứng về nội tại của bất kì kiếm sĩ nào cả bên mình và địch.",
+    },
+  ],
+
+  [ID.dinhNguyenLong]: [
+    {
+      name: "Long Ngáo",
+      text: "Khi Long thua 1 ippon, anh hóa điên, tăng thêm chỉ số tấn công và kĩ thuật, nhưng giảm chỉ số phòng thủ (áp dụng cho tới hết trận kể cả khi có lại được ippon)",
     },
   ],
 };
@@ -631,6 +639,49 @@ function makeLienToanHook(playerA: Player, playerB: Player): LiveModifierHook | 
   };
 }
 
+/**
+ * D/sticky: Đinh Nguyên Long — "Long Ngáo". Same sticky-once-triggered shape
+ * as the dan_nice augment's hook (see makeDanNiceHook in versus/bout.ts): a
+ * `triggered` flag lives in this closure, fresh per bout (a new hook is built
+ * for every bout), and once it flips true it stays true — from that exchange
+ * onward the effect applies unconditionally for the rest of the same bout,
+ * regardless of what happens afterward (including if he ties or takes the
+ * lead back). The trigger direction is reversed from dan_nice's, though: it's
+ * his OPPONENT landing an ippon against him, not him scoring one himself. The
+ * effect is also mixed rather than a pure buff — attack_rate/technique up,
+ * defend_rate down (see dinh_nguyen_long_conceded_ippon in
+ * passives_catalog.json). Only ever targets his own stats, never his
+ * opponent's, so Nguyễn Hoàng Minh Tâm's "Độc Hành" immunity — which only
+ * blocks effects TARGETING Tâm — is never relevant here regardless of who
+ * he's paired against.
+ */
+function makeDinhNguyenLongHook(playerA: Player, playerB: Player): LiveModifierHook | undefined {
+  let side: Side;
+  let name: string;
+  if (playerA.id === ID.dinhNguyenLong) {
+    side = "A";
+    name = playerA.name;
+  } else if (playerB.id === ID.dinhNguyenLong) {
+    side = "B";
+    name = playerB.name;
+  } else {
+    return undefined;
+  }
+  const effects = effectsFor("dinh_nguyen_long_conceded_ippon");
+  let triggered = false;
+  let announced = false;
+  return (state) => {
+    if (!triggered) {
+      const concededIppon = side === "A" ? state.ipponsB > 0 : state.ipponsA > 0;
+      if (concededIppon) triggered = true;
+    }
+    if (!triggered) return undefined;
+    const notes = announced ? undefined : [{ side, text: `${name} đã kích hoạt nội tại.` }];
+    announced = true;
+    return side === "A" ? { a: effects, notes } : { b: effects, notes };
+  };
+}
+
 type NhiNhiPhase = "excited" | "exhausted";
 
 /**
@@ -772,6 +823,7 @@ const LIVE_PASSIVE_CHARACTER_IDS = new Set([
   ID.nguyenPhucDieuAn,
   ID.nguyenCaoBichTram,
   ID.hoangMinhChau,
+  ID.dinhNguyenLong,
 ]);
 
 export function hasLivePassiveCandidates(pickedA: readonly string[], pickedB: readonly string[]): boolean {
@@ -801,6 +853,7 @@ export function buildPassiveHookForBout(ctx: PassiveBoutContext): LiveModifierHo
     makePhanAnhMinhTeamHook(ctx.pickedA, ctx.pickedB, ctx.teamAWinsSoFar, ctx.teamBWinsSoFar),
     makeLienToanHook(ctx.playerA, ctx.playerB),
     makeNhiNhiHook(ctx.playerA, ctx.playerB),
+    makeDinhNguyenLongHook(ctx.playerA, ctx.playerB),
     ctx.isDaihyosen ? undefined : makeCarryForwardHook(ctx.pickedA, ctx.pickedB, ctx.boutsSoFar),
   ].filter((h): h is LiveModifierHook => !!h);
 

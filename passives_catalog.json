@@ -9,12 +9,12 @@
       "context": "self",
       "condition": "Positioned at Taisho this game.",
       "effects": {
-        "attack_rate": 4,
-        "defend_rate": 4,
-        "stamina": 4,
+        "attack_rate": 5,
+        "defend_rate": 5,
+        "stamina": 5,
         "hansoku_rate": -6,
         "technique.men": 4,
-        "technique.kote": 4,
+        "technique.kote": 5,
         "technique.dou": 4,
         "technique.tsuki": 4,
         "defense.men": 4,
@@ -31,9 +31,9 @@
       "context": "self",
       "condition": "Positioned at Senpo this game.",
       "effects": {
-        "attack_rate": 7,
-        "technique.men": 7,
-        "technique.dou": 7
+        "attack_rate": 10,
+        "technique.men": 10,
+        "technique.dou": 10
       }
     },
     {
@@ -60,11 +60,11 @@
       "context": "same_team",
       "condition": "Same team as Phan Phúc Lâm.",
       "effects": {
-        "defend_rate": 6,
-        "defense.men": 6,
-        "defense.kote": 6,
-        "defense.dou": 6,
-        "defense.tsuki": 6
+        "defend_rate": 5,
+        "defense.men": 5,
+        "defense.kote": 5,
+        "defense.dou": 5,
+        "defense.tsuki": 5
       }
     },
     {
@@ -134,10 +134,10 @@
       "context": "teammates",
       "condition": "Per qualifying teammate, evaluated once lineups lock in.",
       "effects": {
-        "technique.men": 6,
-        "technique.kote": 6,
-        "technique.dou": 6,
-        "technique.tsuki": 6
+        "technique.men": 5,
+        "technique.kote": 5,
+        "technique.dou": 5,
+        "technique.tsuki": 5
       }
     },
     {
@@ -437,6 +437,22 @@
         "defense.kote": 6,
         "defense.dou": 6,
         "defense.tsuki": 6
+      }
+    },
+    {
+      "id": "dinh_nguyen_long_conceded_ippon",
+      "character": "Đinh Nguyên Long",
+      "passiveName": "Long Ngáo",
+      "appliesTo": "self",
+      "context": "self",
+      "condition": "Live, first occurrence only: the moment his OPPONENT lands an ippon against him (not when he scores) — sticky for the rest of the bout afterward, same sticky-once-triggered mechanism as the dan_nice augment's 'NAI XỪ !!!', but trigger direction reversed and the effect mixed (partial buff + partial debuff) rather than a pure buff. Never resets/toggles off even if he later ties or takes the lead.",
+      "effects": {
+        "attack_rate": 8,
+        "defend_rate": -7,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6
       }
     },
     {
