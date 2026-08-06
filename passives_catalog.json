@@ -469,6 +469,132 @@
         "technique.dou": 6,
         "technique.tsuki": 6
       }
+    },
+    {
+      "id": "tran_phuc_tri_dong_mon",
+      "character": "Trần Phúc Trí",
+      "passiveName": "Đồng môn",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Base tier (this entry's value): exactly 2 of {Trần Phúc Trí, Nguyễn Cao Bích Trâm, Nguyễn Nhi Bảo Nam} on the same team. Discrete jump, not per-pair stacking: passives.ts triples this same value (never adds a second/third copy from separate pairs) when all 3 are on the same team.",
+      "effects": {
+        "technique.men": 5,
+        "technique.kote": 5,
+        "technique.dou": 5,
+        "technique.tsuki": 5
+      }
+    },
+    {
+      "id": "nguyen_cao_bich_tram_dong_mon",
+      "character": "Nguyễn Cao Bích Trâm",
+      "passiveName": "Đồng môn",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Base tier (this entry's value): exactly 2 of {Trần Phúc Trí, Nguyễn Cao Bích Trâm, Nguyễn Nhi Bảo Nam} on the same team. Discrete jump, not per-pair stacking: passives.ts triples this same value (never adds a second/third copy from separate pairs) when all 3 are on the same team.",
+      "effects": {
+        "technique.men": 5,
+        "technique.kote": 5,
+        "technique.dou": 5,
+        "technique.tsuki": 5
+      }
+    },
+    {
+      "id": "nguyen_nhi_bao_nam_dong_mon",
+      "character": "Nguyễn Nhi Bảo Nam",
+      "passiveName": "Đồng môn",
+      "appliesTo": "self",
+      "context": "same_team",
+      "condition": "Base tier (this entry's value): exactly 2 of {Trần Phúc Trí, Nguyễn Cao Bích Trâm, Nguyễn Nhi Bảo Nam} on the same team. Discrete jump, not per-pair stacking: passives.ts triples this same value (never adds a second/third copy from separate pairs) when all 3 are on the same team.",
+      "effects": {
+        "technique.men": 5,
+        "technique.kote": 5,
+        "technique.dou": 5,
+        "technique.tsuki": 5
+      }
+    },
+    {
+      "id": "tran_phuc_tri_bo_tu_do_tay",
+      "character": "Trần Phúc Trí",
+      "passiveName": "Bộ Tứ Đọ Tay",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Facing (opposite side, same position) one of Ka Nguyệt / Ngô Đắc Sỹ Phong / Phan Phúc Lâm this bout.",
+      "effects": {
+        "defend_rate": -6,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6,
+        "attack_rate": 6,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6,
+        "hansoku_rate": 5
+      }
+    },
+    {
+      "id": "ka_nguyet_bo_tu_do_tay",
+      "character": "Ka Nguyệt",
+      "passiveName": "Bộ Tứ Đọ Tay",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Facing (opposite side, same position) one of Trần Phúc Trí / Ngô Đắc Sỹ Phong / Phan Phúc Lâm this bout.",
+      "effects": {
+        "defend_rate": -6,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6,
+        "attack_rate": 6,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6,
+        "hansoku_rate": 5
+      }
+    },
+    {
+      "id": "ngo_dac_sy_phong_bo_tu_do_tay",
+      "character": "Ngô Đắc Sỹ Phong",
+      "passiveName": "Bộ Tứ Đọ Tay",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Facing (opposite side, same position) one of Trần Phúc Trí / Ka Nguyệt / Phan Phúc Lâm this bout.",
+      "effects": {
+        "defend_rate": -6,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6,
+        "attack_rate": 6,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6,
+        "hansoku_rate": 5
+      }
+    },
+    {
+      "id": "phan_phuc_lam_bo_tu_do_tay",
+      "character": "Phan Phúc Lâm",
+      "passiveName": "Bộ Tứ Đọ Tay",
+      "appliesTo": "self",
+      "context": "opposing",
+      "condition": "Facing (opposite side, same position) one of Trần Phúc Trí / Ka Nguyệt / Ngô Đắc Sỹ Phong this bout.",
+      "effects": {
+        "defend_rate": -6,
+        "defense.men": -6,
+        "defense.kote": -6,
+        "defense.dou": -6,
+        "defense.tsuki": -6,
+        "attack_rate": 6,
+        "technique.men": 6,
+        "technique.kote": 6,
+        "technique.dou": 6,
+        "technique.tsuki": 6,
+        "hansoku_rate": 5
+      }
     }
   ]
 }

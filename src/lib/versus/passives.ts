@@ -68,6 +68,8 @@ const ID = {
   hoangMinhChau: idOf("Hoàng Minh Châu"),
   nguyenHoangMinhTam: idOf("Nguyễn Hoàng Minh Tâm"),
   dinhNguyenLong: idOf("Đinh Nguyên Long"),
+  tranPhucTri: idOf("Trần Phúc Trí"),
+  nguyenNhiBaoNam: idOf("Nguyễn Nhi Bảo Nam"),
 } as const;
 
 /** Base-stats lookup — Hoàng Minh Châu's Tổng Lực comparison deliberately
@@ -113,6 +115,10 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
       name: "Gà Chiến",
       text: "Nếu được xếp ở vị trí Senpo: tăng chỉ số tấn công, kĩ thuật Men và kĩ thuật Dou cho bản thân.",
     },
+    {
+      name: "Bộ Tứ Đọ Tay",
+      text: "Nếu đối đầu trực tiếp (khác đội, cùng vị trí) với 1 trong 3 người còn lại (Trần Phúc Trí, Ngô Đắc Sỹ Phong, Phan Phúc Lâm): cả hai giảm chỉ số phòng thủ và phòng thủ kĩ thuật, tăng chỉ số tấn công và kĩ thuật, tăng tỉ lệ phạm luật.",
+    },
   ],
 
   [ID.tranThuyBaoNhu]: [
@@ -145,6 +151,10 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
     {
       name: "Hổ Phụ Sinh Hổ Tử",
       text: "Cùng đội với Phan Anh Minh: cả hai tăng chỉ số phòng thủ và phòng thủ kĩ thuật.",
+    },
+    {
+      name: "Bộ Tứ Đọ Tay",
+      text: "Nếu đối đầu trực tiếp (khác đội, cùng vị trí) với 1 trong 3 người còn lại (Trần Phúc Trí, Ka Nguyệt, Ngô Đắc Sỹ Phong): cả hai giảm chỉ số phòng thủ và phòng thủ kĩ thuật, tăng chỉ số tấn công và kĩ thuật, tăng tỉ lệ phạm luật.",
     },
   ],
 
@@ -223,6 +233,10 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
       name: "Đọ Tay",
       text: "Đầu mỗi trận đấu, nếu chỉ số phòng thủ của đối thủ cao hơn bản thân: đối thủ bị giảm chỉ số phòng thủ và phòng thủ kĩ thuật, bản thân tăng chỉ số tấn công.",
     },
+    {
+      name: "Bộ Tứ Đọ Tay",
+      text: "Nếu đối đầu trực tiếp (khác đội, cùng vị trí) với 1 trong 3 người còn lại (Trần Phúc Trí, Ka Nguyệt, Phan Phúc Lâm): cả hai giảm chỉ số phòng thủ và phòng thủ kĩ thuật, tăng chỉ số tấn công và kĩ thuật, tăng tỉ lệ phạm luật.",
+    },
   ],
 
   [ID.lienToan]: [
@@ -246,6 +260,10 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
       name: "Quái Vật Thiên Tài",
       text: "Nếu thua trận của mình: tất cả đồng đội tăng thể lực, chỉ số phòng thủ và phòng thủ kĩ thuật cho phần còn lại của ván (không áp dụng cho daihyosen).",
     },
+    {
+      name: "Đồng môn",
+      text: "Nếu cùng đội với đúng 1 trong 2 người còn lại (Trần Phúc Trí, Nguyễn Nhi Bảo Nam): cả hai tăng toàn bộ kĩ thuật. Nếu cùng đội với cả 2 người đó (tức cả 3 cùng đội): tăng gấp 3 lần mức đó cho cả ba.",
+    },
   ],
 
   [ID.hoangMinhChau]: [
@@ -266,6 +284,24 @@ export const PASSIVE_BLOCKS_BY_CHARACTER_ID: Record<string, PassiveBlock[]> = {
     {
       name: "Long Ngáo",
       text: "Khi Long thua 1 ippon, anh hóa điên, tăng thêm chỉ số tấn công và kĩ thuật, nhưng giảm chỉ số phòng thủ (áp dụng cho tới hết trận kể cả khi có lại được ippon)",
+    },
+  ],
+
+  [ID.tranPhucTri]: [
+    {
+      name: "Đồng môn",
+      text: "Nếu cùng đội với đúng 1 trong 2 người còn lại (Nguyễn Cao Bích Trâm, Nguyễn Nhi Bảo Nam): cả hai tăng toàn bộ kĩ thuật. Nếu cùng đội với cả 2 người đó (tức cả 3 cùng đội): tăng gấp 3 lần mức đó cho cả ba.",
+    },
+    {
+      name: "Bộ Tứ Đọ Tay",
+      text: "Nếu đối đầu trực tiếp (khác đội, cùng vị trí) với 1 trong 3 người còn lại (Ka Nguyệt, Ngô Đắc Sỹ Phong, Phan Phúc Lâm): cả hai giảm chỉ số phòng thủ và phòng thủ kĩ thuật, tăng chỉ số tấn công và kĩ thuật, tăng tỉ lệ phạm luật.",
+    },
+  ],
+
+  [ID.nguyenNhiBaoNam]: [
+    {
+      name: "Đồng môn",
+      text: "Nếu cùng đội với đúng 1 trong 2 người còn lại (Trần Phúc Trí, Nguyễn Cao Bích Trâm): cả hai tăng toàn bộ kĩ thuật. Nếu cùng đội với cả 2 người đó (tức cả 3 cùng đội): tăng gấp 3 lần mức đó cho cả ba.",
     },
   ],
 };
@@ -501,6 +537,52 @@ export function resolvePassiveStaticEffects(ctx: {
       } else {
         add(ID.tranMaiKhanh, effectsFor("tran_mai_khanh_opposing_ta_duc_thien"));
         add(ID.taDucThien, effectsFor("ta_duc_thien_opposing_tran_mai_khanh"));
+      }
+    }
+  }
+
+  // Đồng môn — Trần Phúc Trí, Nguyễn Cao Bích Trâm, Nguyễn Nhi Bảo Nam:
+  // discrete count-on-same-team tier (2 present -> x1 base, 3 present -> x3
+  // base), NOT three separate pairwise bonuses stacking additively. Checked
+  // per side since "same team" — not "anywhere in the match" — is the gate.
+  {
+    const dongMonIds = [ID.tranPhucTri, ID.nguyenCaoBichTram, ID.nguyenNhiBaoNam] as const;
+    const dongMonCatalogId: Record<string, string> = {
+      [ID.tranPhucTri]: "tran_phuc_tri_dong_mon",
+      [ID.nguyenCaoBichTram]: "nguyen_cao_bich_tram_dong_mon",
+      [ID.nguyenNhiBaoNam]: "nguyen_nhi_bao_nam_dong_mon",
+    };
+    for (const side of ["A", "B"] as const) {
+      const present = dongMonIds.filter((id) => sideOf(id) === side);
+      if (present.length < 2) continue;
+      for (const id of present) {
+        const base = effectsFor(dongMonCatalogId[id]);
+        add(id, present.length === 3 ? merge(base, base, base) : base);
+      }
+    }
+  }
+
+  // Bộ Tứ Đọ Tay — Trần Phúc Trí, Ka Nguyệt, Ngô Đắc Sỹ Phong, Phan Phúc Lâm:
+  // any two of the four facing each other (opposite sides, same position).
+  // A position holds exactly one person per side, so checking per-position
+  // occupancy already covers every pairwise combination — at most one pair
+  // can actually be facing each other for a given position. The other two
+  // members being present elsewhere in the match adds nothing extra.
+  {
+    const boTuDoTayIds = new Set([ID.tranPhucTri, ID.kaNguyet, ID.ngoDacSyPhong, ID.phanPhucLam]);
+    const boTuDoTayCatalogId: Record<string, string> = {
+      [ID.tranPhucTri]: "tran_phuc_tri_bo_tu_do_tay",
+      [ID.kaNguyet]: "ka_nguyet_bo_tu_do_tay",
+      [ID.ngoDacSyPhong]: "ngo_dac_sy_phong_bo_tu_do_tay",
+      [ID.phanPhucLam]: "phan_phuc_lam_bo_tu_do_tay",
+    };
+    for (const pos of POSITIONS) {
+      const key = pos.toLowerCase() as Lowercase<Position>;
+      const aId = lineupA[key];
+      const bId = lineupB[key];
+      if (aId && bId && boTuDoTayIds.has(aId) && boTuDoTayIds.has(bId)) {
+        add(aId, effectsFor(boTuDoTayCatalogId[aId]));
+        add(bId, effectsFor(boTuDoTayCatalogId[bId]));
       }
     }
   }
